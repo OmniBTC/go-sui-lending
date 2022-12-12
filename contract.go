@@ -8,11 +8,15 @@ import (
 )
 
 type Contract interface {
+	Supply(ctx context.Context, signer types.Address, typeArgs []string, supplyArgs SupplyArgs, callOptions CallOptions) (*types.TransactionBytes, error)
+	Withdraw(ctx context.Context, signer types.Address, typeArgs []string, withdrawArgs WithdrawArgs, callOptions CallOptions) (*types.TransactionBytes, error)
+	Borrow(ctx context.Context, signer types.Address, typeArgs []string, borrowArgs BorrowArgs, callOptions CallOptions) (*types.TransactionBytes, error)
+	Repay(ctx context.Context, signer types.Address, typeArgs []string, repayArgs RepayArgs, callOptions CallOptions) (*types.TransactionBytes, error)
 }
 
 type CallOptions struct {
-	gas       *types.ObjectId
-	gasBudget uint64
+	Gas       *types.ObjectId
+	GasBudget uint64
 }
 
 type SupplyArgs struct {
@@ -106,7 +110,7 @@ func (c *innerContract) Supply(ctx context.Context, signer types.Address, typeAr
 		supplyArgs.DepositCoins,
 		supplyArgs.DepositAmount,
 	}
-	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "supply", typeArgs, args, callOptions.gas, callOptions.gasBudget)
+	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "supply", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
 	return resp, err
 }
 
@@ -120,7 +124,7 @@ func (c *innerContract) Withdraw(ctx context.Context, signer types.Address, type
 		withdrawArgs.WormholeMessageAmount,
 		withdrawArgs.Amount,
 	}
-	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "withdraw", typeArgs, args, callOptions.gas, callOptions.gasBudget)
+	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "withdraw", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
 	return resp, err
 }
 
@@ -133,7 +137,7 @@ func (c *innerContract) Borrow(ctx context.Context, signer types.Address, typeAr
 		borrowArgs.WormholeMessageCoins,
 		borrowArgs.WormholeMessageAmount,
 	}
-	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "borrow", typeArgs, args, callOptions.gas, callOptions.gasBudget)
+	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "borrow", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
 	return resp, err
 }
 
@@ -147,6 +151,6 @@ func (c *innerContract) Repay(ctx context.Context, signer types.Address, typeArg
 		repayArgs.RepayCoins,
 		repayArgs.RepayAmount,
 	}
-	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "repay", typeArgs, args, callOptions.gas, callOptions.gasBudget)
+	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "repay", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
 	return resp, err
 }
