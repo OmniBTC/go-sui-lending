@@ -2,6 +2,10 @@ package gosuilending
 
 import (
 	"context"
+	"encoding/base64"
+	"errors"
+	"math/big"
+	"strings"
 
 	"github.com/coming-chat/go-sui/client"
 	"github.com/coming-chat/go-sui/types"
@@ -12,6 +16,14 @@ type Contract interface {
 	Withdraw(ctx context.Context, signer types.Address, typeArgs []string, withdrawArgs WithdrawArgs, callOptions CallOptions) (*types.TransactionBytes, error)
 	Borrow(ctx context.Context, signer types.Address, typeArgs []string, borrowArgs BorrowArgs, callOptions CallOptions) (*types.TransactionBytes, error)
 	Repay(ctx context.Context, signer types.Address, typeArgs []string, repayArgs RepayArgs, callOptions CallOptions) (*types.TransactionBytes, error)
+
+	GetDolaTokenLiquidity(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (*big.Int, error)
+	GetAppTokenLiquidity(ctx context.Context, signer types.Address, appId uint16, tokenName string, callOptions CallOptions) (liquidity *big.Int, err error)
+	GetUserTokenDebt(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (debtAmount *big.Int, debtValue *big.Int, err error)
+	GetUserCollateral(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (collateralAmount *big.Int, collateralValue *big.Int, err error)
+	GetUserLendingInfo(ctx context.Context, signer types.Address, callOptions CallOptions) (userLendingInfo *UserLendingInfo, err error)
+	GetReserveInfo(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (reserveInfo *ReserveInfo, err error)
+	GetUserAllowedBorrow(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (amount *big.Int, err error)
 }
 
 type CallOptions struct {
@@ -49,6 +61,36 @@ type RepayArgs struct {
 	WormholeMessageAmount uint64
 	RepayCoins            []types.ObjectId // vector<Coin<CoinType>>
 	RepayAmount           uint64
+}
+
+type ReserveInfo struct {
+	BorrowApy       int      // 200 -> 200/10000=2.0%
+	Debt            *big.Int // 100000000 -> 100000000/1e8 = 1
+	Reserve         *big.Int // 100000000 -> 100000000/1e8 = 1
+	SupplyApy       int      // 100 -> 100/10000=1.0%
+	UtilizationRate int      // 100 -> 100/10000=1.0%
+	TokenName       string   // base64 encode name
+}
+
+type UserLendingInfo struct {
+	TotalCollateralValue *big.Int
+	TotalDebtValue       *big.Int
+	CollateralInfos      []CollateralItem
+	DebtInfos            []DebtItem
+}
+
+type CollateralItem struct {
+	Type             string
+	CollateralAmount *big.Int
+	CollateralValue  *big.Int
+	TokenName        string
+}
+
+type DebtItem struct {
+	Type       string
+	DebtAmount *big.Int
+	DebtValue  *big.Int
+	TokenName  string
 }
 
 type ContractConfig struct {
@@ -136,6 +178,7 @@ func (c *innerContract) Borrow(ctx context.Context, signer types.Address, typeAr
 		borrowArgs.DstChain,
 		borrowArgs.WormholeMessageCoins,
 		borrowArgs.WormholeMessageAmount,
+		borrowArgs.Amount,
 	}
 	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "borrow", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
 	return resp, err
@@ -153,4 +196,279 @@ func (c *innerContract) Repay(ctx context.Context, signer types.Address, typeArg
 	}
 	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "repay", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
 	return resp, err
+}
+
+func (c *innerContract) GetDolaTokenLiquidity(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (liquidity *big.Int, err error) {
+	tokenName = strings.TrimPrefix(tokenName, "0x")
+	args := []any{
+		*c.poolManagerInfo,
+		tokenName,
+	}
+
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_dola_token_liquidity", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	if err != nil {
+		return
+	}
+
+	effects, err := c.client.DryRunTransaction(ctx, tx)
+	if err != nil {
+		return
+	}
+
+	err = parseLastEvent(effects, func(event types.Event) error {
+		tokenLiquidity := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})["token_liquidity"].(float64)
+		liquidity = big.NewInt(0).SetUint64(uint64(tokenLiquidity))
+		return nil
+	})
+	return
+}
+
+func (c *innerContract) GetAppTokenLiquidity(ctx context.Context, signer types.Address, appId uint16, tokenName string, callOptions CallOptions) (liquidity *big.Int, err error) {
+	tokenName = strings.TrimPrefix(tokenName, "0x")
+	args := []any{
+		*c.poolManagerInfo,
+		appId,
+		tokenName,
+	}
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_app_token_liquidity", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	if err != nil {
+		return
+	}
+
+	effects, err := c.client.DryRunTransaction(ctx, tx)
+	if err != nil {
+		return
+	}
+
+	err = parseLastEvent(effects, func(event types.Event) error {
+		tokenLiquidity := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})["token_liquidity"].(string)
+		var b bool
+		liquidity, b = big.NewInt(0).SetString(tokenLiquidity, 10)
+		if !b {
+			return errors.New("event parse failed: tokenLiquidity is not integer")
+		}
+		return nil
+	})
+	return
+}
+
+func (c *innerContract) GetUserTokenDebt(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (debtAmount *big.Int, debtValue *big.Int, err error) {
+	tokenName = strings.TrimPrefix(tokenName, "0x")
+	userAddress := signer.String()
+	args := []any{
+		*c.storage,
+		*c.priceOracle,
+		userAddress,
+		tokenName,
+	}
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_user_token_debt", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	if err != nil {
+		return
+	}
+
+	effects, err := c.client.DryRunTransaction(ctx, tx)
+	if err != nil {
+		return
+	}
+
+	err = parseLastEvent(effects, func(event types.Event) error {
+		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
+		debtAmountFloat := fields["debt_amount"].(float64)
+		debtValueFloat := fields["debt_value"].(float64)
+		debtAmount = big.NewInt(0).SetUint64(uint64(debtAmountFloat))
+		debtValue = big.NewInt(0).SetUint64(uint64(debtValueFloat))
+		return nil
+	})
+	return
+}
+
+func (c *innerContract) GetUserCollateral(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (collateralAmount *big.Int, collateralValue *big.Int, err error) {
+	tokenName = strings.TrimPrefix(tokenName, "0x")
+	userAddress := signer.String()
+	args := []any{
+		*c.storage,
+		*c.priceOracle,
+		userAddress,
+		tokenName,
+	}
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_user_collateral", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	if err != nil {
+		return
+	}
+
+	effects, err := c.client.DryRunTransaction(ctx, tx)
+	if err != nil {
+		return
+	}
+
+	err = parseLastEvent(effects, func(event types.Event) error {
+		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
+		collateralAmountFloat := fields["collateral_amount"].(float64)
+		collateralValueFloat := fields["collateral_value"].(float64)
+		collateralAmount = big.NewInt(0).SetUint64(uint64(collateralAmountFloat))
+		collateralValue = big.NewInt(0).SetUint64(uint64(collateralValueFloat))
+		return nil
+	})
+	return
+}
+
+func (c *innerContract) GetReserveInfo(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (reserveInfo *ReserveInfo, err error) {
+	tokenName = strings.TrimPrefix(tokenName, "0x")
+	args := []any{
+		*c.poolManagerInfo,
+		*c.storage,
+		tokenName,
+	}
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_reserve_info", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	if err != nil {
+		return
+	}
+
+	effects, err := c.client.DryRunTransaction(ctx, tx)
+	if err != nil {
+		return
+	}
+
+	err = parseLastEvent(effects, func(event types.Event) error {
+		reserveInfo = &ReserveInfo{}
+		var b bool
+		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
+		reserveInfo.BorrowApy = int(fields["borrow_apy"].(float64))
+		reserveInfo.Debt, b = new(big.Int).SetString(fields["debt"].(string), 10)
+		if !b {
+			return errors.New("parse reserve failed")
+		}
+		reserveInfo.Reserve, b = new(big.Int).SetString(fields["reserve"].(string), 10)
+		if !b {
+			return errors.New("parse reserve failed")
+		}
+		reserveInfo.SupplyApy = int(fields["supply_apy"].(float64))
+		if tokenNameBytes, err := base64.StdEncoding.DecodeString(fields["token_name"].(string)); err != nil {
+			return err
+		} else {
+			reserveInfo.TokenName = "0x" + string(tokenNameBytes)
+		}
+		reserveInfo.UtilizationRate = int(fields["utilization_rate"].(float64))
+		return nil
+	})
+	return
+}
+
+func (c *innerContract) GetUserAllowedBorrow(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (amount *big.Int, err error) {
+	userAddress := signer.String()
+	tokenName = strings.TrimPrefix(tokenName, "0x")
+	args := []any{
+		*c.poolManagerInfo,
+		*c.storage,
+		*c.priceOracle,
+		tokenName,
+		userAddress,
+	}
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_user_allowed_borrow", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	if err != nil {
+		return
+	}
+
+	effects, err := c.client.DryRunTransaction(ctx, tx)
+	if err != nil {
+		return
+	}
+
+	err = parseLastEvent(effects, func(event types.Event) error {
+		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
+		amount = big.NewInt(0).SetUint64(uint64(fields["borrow_amount"].(float64)))
+		if amount.Cmp(big.NewInt(0)) == 0 {
+			if fields["reason"] != "" && fields["reason"] != nil {
+				return errors.New(fields["reason"].(string))
+			}
+		}
+		return nil
+	})
+	return
+}
+
+func (c *innerContract) GetUserLendingInfo(ctx context.Context, signer types.Address, callOptions CallOptions) (userLendingInfo *UserLendingInfo, err error) {
+	userAddress := signer.String()
+	args := []any{
+		*c.storage,
+		*c.priceOracle,
+		userAddress,
+	}
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_user_lending_info", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	if err != nil {
+		return
+	}
+
+	effects, err := c.client.DryRunTransaction(ctx, tx)
+	if err != nil {
+		return
+	}
+
+	err = parseLastEvent(effects, func(event types.Event) error {
+		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
+		userLendingInfo = &UserLendingInfo{}
+		userLendingInfo.TotalCollateralValue = new(big.Int).SetUint64(uint64(fields["total_collateral_value"].(float64)))
+		userLendingInfo.TotalDebtValue = new(big.Int).SetUint64(uint64(fields["total_debt_value"].(float64)))
+
+		if fields["collateral_infos"] != "" {
+			infos := fields["collateral_infos"].([]interface{})
+			userLendingInfo.CollateralInfos = make([]CollateralItem, 0, len(infos))
+			for _, info := range infos {
+				infoMap := info.(map[string]interface{})
+				innerFields := infoMap["fields"].(map[string]interface{})
+				tokenNameBytes, err := base64.StdEncoding.DecodeString(innerFields["token_name"].(string))
+				if err != nil {
+					return err
+				}
+
+				userLendingInfo.CollateralInfos = append(userLendingInfo.CollateralInfos, CollateralItem{
+					Type:             infoMap["type"].(string),
+					CollateralAmount: new(big.Int).SetUint64(uint64(innerFields["collateral_amount"].(float64))),
+					CollateralValue:  new(big.Int).SetUint64(uint64(innerFields["collateral_value"].(float64))),
+					TokenName:        string(tokenNameBytes),
+				})
+			}
+		}
+
+		if fields["debt_infos"] != "" {
+			infos := fields["debt_infos"].([]interface{})
+			userLendingInfo.DebtInfos = make([]DebtItem, 0, len(infos))
+			for _, info := range infos {
+				infoMap := info.(map[string]interface{})
+				innerFields := infoMap["fields"].(map[string]interface{})
+				tokenNameBytes, err := base64.StdEncoding.DecodeString(innerFields["token_name"].(string))
+				if err != nil {
+					return err
+				}
+
+				userLendingInfo.DebtInfos = append(userLendingInfo.DebtInfos, DebtItem{
+					Type:       infoMap["type"].(string),
+					DebtAmount: new(big.Int).SetUint64(uint64(innerFields["debt_amount"].(float64))),
+					DebtValue:  new(big.Int).SetUint64(uint64(innerFields["debt_value"].(float64))),
+					TokenName:  string(tokenNameBytes),
+				})
+			}
+		}
+
+		return nil
+	})
+	return
+}
+
+func parseLastEvent(effects *types.TransactionEffects, f func(event types.Event) error) (err error) {
+	if effects.Status.Status != "success" {
+		return errors.New(effects.Status.Error)
+	}
+
+	if len(effects.Events) == 0 {
+		return errors.New("invalid events")
+	}
+
+	defer func() {
+		if merr := recover(); merr != nil {
+			err = errors.New("event parse failed")
+		}
+	}()
+
+	return f(effects.Events[len(effects.Events)-1])
 }
