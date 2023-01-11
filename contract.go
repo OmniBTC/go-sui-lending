@@ -11,21 +11,6 @@ import (
 	"github.com/coming-chat/go-sui/types"
 )
 
-type Contract interface {
-	Supply(ctx context.Context, signer types.Address, typeArgs []string, supplyArgs SupplyArgs, callOptions CallOptions) (*types.TransactionBytes, error)
-	Withdraw(ctx context.Context, signer types.Address, typeArgs []string, withdrawArgs WithdrawArgs, callOptions CallOptions) (*types.TransactionBytes, error)
-	Borrow(ctx context.Context, signer types.Address, typeArgs []string, borrowArgs BorrowArgs, callOptions CallOptions) (*types.TransactionBytes, error)
-	Repay(ctx context.Context, signer types.Address, typeArgs []string, repayArgs RepayArgs, callOptions CallOptions) (*types.TransactionBytes, error)
-
-	GetDolaTokenLiquidity(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (*big.Int, error)
-	GetAppTokenLiquidity(ctx context.Context, signer types.Address, appId uint16, tokenName string, callOptions CallOptions) (liquidity *big.Int, err error)
-	GetUserTokenDebt(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (debtAmount *big.Int, debtValue *big.Int, err error)
-	GetUserCollateral(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (collateralAmount *big.Int, collateralValue *big.Int, err error)
-	GetUserLendingInfo(ctx context.Context, signer types.Address, callOptions CallOptions) (userLendingInfo *UserLendingInfo, err error)
-	GetReserveInfo(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (reserveInfo *ReserveInfo, err error)
-	GetUserAllowedBorrow(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (amount *big.Int, err error)
-}
-
 type CallOptions struct {
 	Gas       *types.ObjectId
 	GasBudget uint64
@@ -103,7 +88,7 @@ type ContractConfig struct {
 	WormholeState              string
 }
 
-type innerContract struct {
+type Contract struct {
 	client *client.Client
 
 	lendingPortalPackageId     *types.HexData
@@ -115,8 +100,8 @@ type innerContract struct {
 	wormholeState              *types.HexData
 }
 
-func NewContract(client *client.Client, config ContractConfig) (Contract, error) {
-	contract := &innerContract{client: client}
+func NewContract(client *client.Client, config ContractConfig) (*Contract, error) {
+	contract := &Contract{client: client}
 	var err error
 	if contract.lendingPortalPackageId, err = types.NewHexData(config.LendingPortalPackageId); err != nil {
 		return nil, err
@@ -142,7 +127,7 @@ func NewContract(client *client.Client, config ContractConfig) (Contract, error)
 	return contract, nil
 }
 
-func (c *innerContract) Supply(ctx context.Context, signer types.Address, typeArgs []string, supplyArgs SupplyArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
+func (c *Contract) Supply(ctx context.Context, signer types.Address, typeArgs []string, supplyArgs SupplyArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
 	args := []any{
 		*c.poolState,
 		*c.wormholeState,
@@ -156,7 +141,7 @@ func (c *innerContract) Supply(ctx context.Context, signer types.Address, typeAr
 	return resp, err
 }
 
-func (c *innerContract) Withdraw(ctx context.Context, signer types.Address, typeArgs []string, withdrawArgs WithdrawArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
+func (c *Contract) Withdraw(ctx context.Context, signer types.Address, typeArgs []string, withdrawArgs WithdrawArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
 	args := []any{
 		withdrawArgs.Pool,
 		*c.poolState,
@@ -170,7 +155,7 @@ func (c *innerContract) Withdraw(ctx context.Context, signer types.Address, type
 	return resp, err
 }
 
-func (c *innerContract) Borrow(ctx context.Context, signer types.Address, typeArgs []string, borrowArgs BorrowArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
+func (c *Contract) Borrow(ctx context.Context, signer types.Address, typeArgs []string, borrowArgs BorrowArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
 	args := []any{
 		borrowArgs.Pool,
 		*c.poolState,
@@ -184,7 +169,7 @@ func (c *innerContract) Borrow(ctx context.Context, signer types.Address, typeAr
 	return resp, err
 }
 
-func (c *innerContract) Repay(ctx context.Context, signer types.Address, typeArgs []string, repayArgs RepayArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
+func (c *Contract) Repay(ctx context.Context, signer types.Address, typeArgs []string, repayArgs RepayArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
 	args := []any{
 		repayArgs.Pool,
 		*c.poolState,
@@ -198,7 +183,7 @@ func (c *innerContract) Repay(ctx context.Context, signer types.Address, typeArg
 	return resp, err
 }
 
-func (c *innerContract) GetDolaTokenLiquidity(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (liquidity *big.Int, err error) {
+func (c *Contract) GetDolaTokenLiquidity(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (liquidity *big.Int, err error) {
 	tokenName = strings.TrimPrefix(tokenName, "0x")
 	args := []any{
 		*c.poolManagerInfo,
@@ -223,7 +208,7 @@ func (c *innerContract) GetDolaTokenLiquidity(ctx context.Context, signer types.
 	return
 }
 
-func (c *innerContract) GetAppTokenLiquidity(ctx context.Context, signer types.Address, appId uint16, tokenName string, callOptions CallOptions) (liquidity *big.Int, err error) {
+func (c *Contract) GetAppTokenLiquidity(ctx context.Context, signer types.Address, appId uint16, tokenName string, callOptions CallOptions) (liquidity *big.Int, err error) {
 	tokenName = strings.TrimPrefix(tokenName, "0x")
 	args := []any{
 		*c.poolManagerInfo,
@@ -252,7 +237,7 @@ func (c *innerContract) GetAppTokenLiquidity(ctx context.Context, signer types.A
 	return
 }
 
-func (c *innerContract) GetUserTokenDebt(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (debtAmount *big.Int, debtValue *big.Int, err error) {
+func (c *Contract) GetUserTokenDebt(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (debtAmount *big.Int, debtValue *big.Int, err error) {
 	tokenName = strings.TrimPrefix(tokenName, "0x")
 	userAddress := signer.String()
 	args := []any{
@@ -282,7 +267,7 @@ func (c *innerContract) GetUserTokenDebt(ctx context.Context, signer types.Addre
 	return
 }
 
-func (c *innerContract) GetUserCollateral(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (collateralAmount *big.Int, collateralValue *big.Int, err error) {
+func (c *Contract) GetUserCollateral(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (collateralAmount *big.Int, collateralValue *big.Int, err error) {
 	tokenName = strings.TrimPrefix(tokenName, "0x")
 	userAddress := signer.String()
 	args := []any{
@@ -312,7 +297,7 @@ func (c *innerContract) GetUserCollateral(ctx context.Context, signer types.Addr
 	return
 }
 
-func (c *innerContract) GetReserveInfo(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (reserveInfo *ReserveInfo, err error) {
+func (c *Contract) GetReserveInfo(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (reserveInfo *ReserveInfo, err error) {
 	tokenName = strings.TrimPrefix(tokenName, "0x")
 	args := []any{
 		*c.poolManagerInfo,
@@ -354,7 +339,7 @@ func (c *innerContract) GetReserveInfo(ctx context.Context, signer types.Address
 	return
 }
 
-func (c *innerContract) GetUserAllowedBorrow(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (amount *big.Int, err error) {
+func (c *Contract) GetUserAllowedBorrow(ctx context.Context, signer types.Address, tokenName string, callOptions CallOptions) (amount *big.Int, err error) {
 	userAddress := signer.String()
 	tokenName = strings.TrimPrefix(tokenName, "0x")
 	args := []any{
@@ -387,7 +372,7 @@ func (c *innerContract) GetUserAllowedBorrow(ctx context.Context, signer types.A
 	return
 }
 
-func (c *innerContract) GetUserLendingInfo(ctx context.Context, signer types.Address, callOptions CallOptions) (userLendingInfo *UserLendingInfo, err error) {
+func (c *Contract) GetUserLendingInfo(ctx context.Context, signer types.Address, callOptions CallOptions) (userLendingInfo *UserLendingInfo, err error) {
 	userAddress := signer.String()
 	args := []any{
 		*c.storage,

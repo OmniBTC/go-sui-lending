@@ -28,7 +28,7 @@ func PanicIfError(err error) {
 	}
 }
 
-func GetDefaultContract() gosuilending.Contract {
+func GetDefaultContract() *gosuilending.Contract {
 	contract, err := gosuilending.NewContract(GetDevClient(), gosuilending.ContractConfig{
 		LendingPortalPackageId:     "0x481619b177aabe0f4c6c06e0b141e3373644f90e",
 		ExternalInterfacePackageId: "0xe558bd8e7a6a88a405ffd93cc71ecf1ade45686c",
