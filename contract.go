@@ -18,36 +18,36 @@ type CallOptions struct {
 
 type SupplyArgs struct {
 	WormholeMessageCoins  []types.ObjectId // vector<Coin<SUI>>
-	WormholeMessageAmount uint64
+	WormholeMessageAmount string
 	Pool                  types.HexData
 	DepositCoins          []types.ObjectId // vector<Coin<CoinType>>
-	DepositAmount         uint64
+	DepositAmount         string
 }
 
 type WithdrawArgs struct {
 	Pool                  types.HexData
-	Receiver              []byte
-	DstChain              uint64
+	Receiver              string
+	DstChain              string
 	WormholeMessageCoins  []types.ObjectId // vector<Coin<SUI>>
-	WormholeMessageAmount uint64
-	Amount                uint64
+	WormholeMessageAmount string
+	Amount                string
 }
 
 type BorrowArgs struct {
 	Pool                  types.HexData
-	Receiver              []byte
-	DstChain              uint64
+	Receiver              string
+	DstChain              string
 	WormholeMessageCoins  []types.ObjectId // vector<Coin<SUI>>
-	WormholeMessageAmount uint64
-	Amount                uint64
+	WormholeMessageAmount string
+	Amount                string
 }
 
 type RepayArgs struct {
 	Pool                  types.HexData
 	WormholeMessageCoins  []types.ObjectId // vector<Coin<SUI>>
-	WormholeMessageAmount uint64
+	WormholeMessageAmount string
 	RepayCoins            []types.ObjectId // vector<Coin<CoinType>>
-	RepayAmount           uint64
+	RepayAmount           string
 }
 
 type ReserveInfo struct {
