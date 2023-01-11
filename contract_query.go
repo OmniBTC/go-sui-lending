@@ -217,8 +217,9 @@ func (c *Contract) GetUserLendingInfo(ctx context.Context, signer types.Address,
 	err = parseLastEvent(effects, func(event types.Event) error {
 		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
 		userLendingInfo = &UserLendingInfo{}
-		userLendingInfo.TotalCollateralValue = new(big.Int).SetUint64(uint64(fields["total_collateral_value"].(float64)))
-		userLendingInfo.TotalDebtValue = new(big.Int).SetUint64(uint64(fields["total_debt_value"].(float64)))
+		userLendingInfo.TotalCollateralValue, _ = new(big.Int).SetString(fields["total_collateral_value"].(string), 10)
+		userLendingInfo.TotalDebtValue, _ = new(big.Int).SetString(fields["total_debt_value"].(string), 10)
+		userLendingInfo.HealthFactor, _ = new(big.Int).SetString(fields["health_factor"].(string), 10)
 
 		if fields["collateral_infos"] != "" {
 			infos := fields["collateral_infos"].([]interface{})

@@ -59,6 +59,7 @@ type ReserveInfo struct {
 type UserLendingInfo struct {
 	TotalCollateralValue *big.Int
 	TotalDebtValue       *big.Int
+	HealthFactor         *big.Int
 	CollateralInfos      []CollateralItem
 	DebtInfos            []DebtItem
 }
