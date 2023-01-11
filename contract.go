@@ -26,6 +26,7 @@ type SupplyArgs struct {
 
 type WithdrawArgs struct {
 	Pool                  types.HexData
+	Receiver              []byte
 	DstChain              uint64
 	WormholeMessageCoins  []types.ObjectId // vector<Coin<SUI>>
 	WormholeMessageAmount uint64
@@ -34,6 +35,7 @@ type WithdrawArgs struct {
 
 type BorrowArgs struct {
 	Pool                  types.HexData
+	Receiver              []byte
 	DstChain              uint64
 	WormholeMessageCoins  []types.ObjectId // vector<Coin<SUI>>
 	WormholeMessageAmount uint64
@@ -146,6 +148,7 @@ func (c *Contract) Withdraw(ctx context.Context, signer types.Address, typeArgs 
 		withdrawArgs.Pool,
 		*c.poolState,
 		*c.wormholeState,
+		withdrawArgs.Receiver,
 		withdrawArgs.DstChain,
 		withdrawArgs.WormholeMessageCoins,
 		withdrawArgs.WormholeMessageAmount,
@@ -160,6 +163,7 @@ func (c *Contract) Borrow(ctx context.Context, signer types.Address, typeArgs []
 		borrowArgs.Pool,
 		*c.poolState,
 		*c.wormholeState,
+		borrowArgs.Receiver,
 		borrowArgs.DstChain,
 		borrowArgs.WormholeMessageCoins,
 		borrowArgs.WormholeMessageAmount,
