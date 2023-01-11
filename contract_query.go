@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"math/big"
+	"strconv"
 
 	"github.com/coming-chat/go-sui/types"
 )
@@ -150,7 +151,10 @@ func (c *Contract) GetReserveInfo(ctx context.Context, signer types.Address, dol
 		reserveInfo = &ReserveInfo{}
 		var b bool
 		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
-		reserveInfo.BorrowApy = int(fields["borrow_apy"].(float64))
+		reserveInfo.BorrowApy, err = strconv.Atoi(fields["borrow_apy"].(string))
+		if err != nil {
+			return err
+		}
 		reserveInfo.Debt, b = new(big.Int).SetString(fields["debt"].(string), 10)
 		if !b {
 			return errors.New("parse reserve failed")
@@ -159,8 +163,15 @@ func (c *Contract) GetReserveInfo(ctx context.Context, signer types.Address, dol
 		if !b {
 			return errors.New("parse reserve failed")
 		}
-		reserveInfo.SupplyApy = int(fields["supply_apy"].(float64))
-		reserveInfo.UtilizationRate = int(fields["utilization_rate"].(float64))
+		reserveInfo.SupplyApy, err = strconv.Atoi(fields["supply_apy"].(string))
+		if err != nil {
+			return err
+		}
+		reserveInfo.UtilizationRate, err = strconv.Atoi(fields["utilization_rate"].(string))
+		if err != nil {
+			return err
+		}
+
 		reserveInfo.DolaPoolId = uint16(fields["dola_pool_id"].(float64))
 		return nil
 	})
