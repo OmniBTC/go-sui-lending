@@ -36,6 +36,22 @@ func getExternalInterfacePackageId() *types.HexData {
 	return externalInterfacePackageId
 }
 
+func getPriceOracle() *types.HexData {
+	priceOracle, err := types.NewHexData("0x44f0e3fcd7fc3d297bfead7d6ea3ff339b353aff")
+	AssertNil(err)
+	return priceOracle
+}
+
+func getSuiDolaChainId() uint16 {
+	return 0
+}
+
+func getStorage() *types.HexData {
+	storage, err := types.NewHexData("0x22e55281cb7974950c5a6849406fed7eb64f1ac5")
+	AssertNil(err)
+	return storage
+}
+
 func getUSDTPoolId() uint16 {
 	return 1
 }
@@ -369,6 +385,159 @@ func TestContract_GetDolaUserAddresses(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Contract.GetDolaUserAddresses() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+		})
+	}
+}
+
+func TestContract_GetUserHealthFactor(t *testing.T) {
+	address, gas := getTestAddressAndGas()
+	type fields struct {
+		client                     *client.Client
+		externalInterfacePackageId *types.HexData
+		priceOracle                *types.HexData
+		storage                    *types.HexData
+	}
+	type args struct {
+		ctx         context.Context
+		signer      types.Address
+		dolaUserId  string
+		callOptions CallOptions
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "case",
+			fields: fields{
+				client:                     getDevClient(),
+				externalInterfacePackageId: getExternalInterfacePackageId(),
+				priceOracle:                getPriceOracle(),
+				storage:                    getStorage(),
+			},
+			args: args{
+				ctx:         context.Background(),
+				signer:      *address,
+				dolaUserId:  getUserDolaId(),
+				callOptions: CallOptions{Gas: gas, GasBudget: 10000},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &Contract{
+				client:                     tt.fields.client,
+				externalInterfacePackageId: tt.fields.externalInterfacePackageId,
+				priceOracle:                tt.fields.priceOracle,
+				storage:                    tt.fields.storage,
+			}
+			_, err := c.GetUserHealthFactor(tt.args.ctx, tt.args.signer, tt.args.dolaUserId, tt.args.callOptions)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Contract.GetUserHealthFactor() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestContract_GetAllOraclePrice(t *testing.T) {
+	address, gas := getTestAddressAndGas()
+	type fields struct {
+		client                     *client.Client
+		externalInterfacePackageId *types.HexData
+		priceOracle                *types.HexData
+		storage                    *types.HexData
+	}
+	type args struct {
+		ctx         context.Context
+		signer      types.Address
+		callOptions CallOptions
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "case",
+			fields: fields{
+				client:                     getDevClient(),
+				externalInterfacePackageId: getExternalInterfacePackageId(),
+				priceOracle:                getPriceOracle(),
+				storage:                    getStorage(),
+			},
+			args: args{
+				ctx:         context.Background(),
+				signer:      *address,
+				callOptions: CallOptions{Gas: gas, GasBudget: 10000},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &Contract{
+				client:                     tt.fields.client,
+				externalInterfacePackageId: tt.fields.externalInterfacePackageId,
+				priceOracle:                tt.fields.priceOracle,
+				storage:                    tt.fields.storage,
+			}
+			if _, err := c.GetAllOraclePrice(tt.args.ctx, tt.args.signer, tt.args.callOptions); (err != nil) != tt.wantErr {
+				t.Errorf("Contract.GetAllOraclePrice() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestContract_GetOraclePrice(t *testing.T) {
+	address, gas := getTestAddressAndGas()
+	type fields struct {
+		client                     *client.Client
+		externalInterfacePackageId *types.HexData
+		priceOracle                *types.HexData
+	}
+	type args struct {
+		ctx         context.Context
+		signer      types.Address
+		dolaPoolId  uint16
+		callOptions CallOptions
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "case",
+			fields: fields{
+				client:                     getDevClient(),
+				externalInterfacePackageId: getExternalInterfacePackageId(),
+				priceOracle:                getPriceOracle(),
+			},
+			args: args{
+				ctx:         context.Background(),
+				signer:      *address,
+				dolaPoolId:  getUSDTPoolId(),
+				callOptions: CallOptions{Gas: gas, GasBudget: 10000},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &Contract{
+				client:                     tt.fields.client,
+				externalInterfacePackageId: tt.fields.externalInterfacePackageId,
+				priceOracle:                tt.fields.priceOracle,
+			}
+			if _, err := c.GetOraclePrice(tt.args.ctx, tt.args.signer, tt.args.dolaPoolId, tt.args.callOptions); (err != nil) != tt.wantErr {
+				t.Errorf("Contract.GetOraclePrice() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

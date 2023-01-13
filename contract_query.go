@@ -24,7 +24,24 @@ type (
 		DolaChainId uint16
 		DolaAddress string // hex string. 0x123
 	}
+
+	DolaTokenPrice struct {
+		Decimal    int // the decimal of price,
+		DolaPoolId uint16
+		Price      *big.Int
+	}
 )
+
+func newDolaTokenPrice(priceInfo interface{}) DolaTokenPrice {
+	mapInfo := priceInfo.(map[string]interface{})
+	fields := mapInfo["fields"].(map[string]interface{})
+	price, _ := new(big.Int).SetString(fields["price"].(string), 10)
+	return DolaTokenPrice{
+		Decimal:    int(fields["decimal"].(float64)),
+		DolaPoolId: uint16(fields["dola_pool_id"].(float64)),
+		Price:      price,
+	}
+}
 
 func newDolaUserAddress(info interface{}) DolaUserAddress {
 	mapInfo := info.(map[string]interface{})
@@ -462,10 +479,10 @@ func (c *Contract) GetUserLendingInfo(ctx context.Context, signer types.Address,
 	return
 }
 
-func (c *Contract) GetOraclePrice(ctx context.Context, signer types.Address, dolaChainId uint16, callOptions CallOptions) (err error) {
+func (c *Contract) GetOraclePrice(ctx context.Context, signer types.Address, dolaPoolId uint16, callOptions CallOptions) (dolaTokenPrice DolaTokenPrice, err error) {
 	args := []any{
 		*c.priceOracle,
-		dolaChainId,
+		dolaPoolId,
 	}
 
 	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_oracle_price", []string{}, args, callOptions.Gas, callOptions.GasBudget)
@@ -480,14 +497,14 @@ func (c *Contract) GetOraclePrice(ctx context.Context, signer types.Address, dol
 
 	// todo parse event
 	err = parseLastEvent(effects, func(event types.Event) error {
-		// fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
-		// userId = fields["dola_user_id"].(string)
+		events := event.(map[string]interface{})["moveEvent"].(map[string]interface{})
+		dolaTokenPrice = newDolaTokenPrice(events)
 		return nil
 	})
 	return
 }
 
-func (c *Contract) GetAllOraclePrice(ctx context.Context, signer types.Address, callOptions CallOptions) (err error) {
+func (c *Contract) GetAllOraclePrice(ctx context.Context, signer types.Address, callOptions CallOptions) (prices []DolaTokenPrice, err error) {
 	args := []any{
 		*c.storage,
 		*c.priceOracle,
@@ -503,10 +520,13 @@ func (c *Contract) GetAllOraclePrice(ctx context.Context, signer types.Address, 
 		return
 	}
 
-	// todo parse event
 	err = parseLastEvent(effects, func(event types.Event) error {
-		// fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
-		// userId = fields["dola_user_id"].(string)
+		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
+		tokenPrices := fields["token_prices"].([]interface{})
+		prices = make([]DolaTokenPrice, len(tokenPrices))
+		for i, item := range tokenPrices {
+			prices[i] = newDolaTokenPrice(item)
+		}
 		return nil
 	})
 	return
@@ -563,7 +583,7 @@ func (c *Contract) GetDolaUserAddresses(ctx context.Context, signer types.Addres
 	return
 }
 
-func (c *Contract) GetUserHealthFactor(ctx context.Context, signer types.Address, dolaUserId string, callOptions CallOptions) (healthFactor string, err error) {
+func (c *Contract) GetUserHealthFactor(ctx context.Context, signer types.Address, dolaUserId string, callOptions CallOptions) (healthFactor *big.Int, err error) {
 	args := []any{
 		*c.storage,
 		*c.priceOracle,
@@ -579,10 +599,9 @@ func (c *Contract) GetUserHealthFactor(ctx context.Context, signer types.Address
 		return
 	}
 
-	// todo parse user health factor
 	err = parseLastEvent(effects, func(event types.Event) error {
 		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
-		healthFactor = fields["healthFactor"].(string)
+		healthFactor, _ = new(big.Int).SetString(fields["health_factor"].(string), 10)
 		return nil
 	})
 	return
