@@ -81,6 +81,7 @@ type DebtItem struct {
 type ContractConfig struct {
 	LendingPortalPackageId     string
 	ExternalInterfacePackageId string
+	BridgePoolPackageId        string
 	PoolManagerInfo            string
 	PoolState                  string
 	PriceOracle                string
@@ -94,6 +95,7 @@ type Contract struct {
 
 	lendingPortalPackageId     *types.HexData
 	externalInterfacePackageId *types.HexData
+	bridgePoolPackageId        *types.HexData
 	poolManagerInfo            *types.HexData
 	poolState                  *types.HexData
 	priceOracle                *types.HexData
@@ -109,6 +111,9 @@ func NewContract(client *client.Client, config ContractConfig) (*Contract, error
 		return nil, err
 	}
 	if contract.externalInterfacePackageId, err = types.NewHexData(config.ExternalInterfacePackageId); err != nil {
+		return nil, err
+	}
+	if contract.bridgePoolPackageId, err = types.NewHexData(config.BridgePoolPackageId); err != nil {
 		return nil, err
 	}
 	if contract.poolManagerInfo, err = types.NewHexData(config.PoolManagerInfo); err != nil {
