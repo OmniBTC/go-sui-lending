@@ -59,12 +59,38 @@ type (
 	}
 
 	DebtItem struct {
-		Type       string
 		DebtAmount *big.Int
 		DebtValue  *big.Int
 		DolaPoolId uint16
+		BorrowApy  int
+		SupplyApy  int
 	}
 )
+
+func newDebtItem(info interface{}) (debtItem DebtItem, err error) {
+	var b bool
+	fields := info.(map[string]interface{})["fields"].(map[string]interface{})
+	debtItem.BorrowApy, err = strconv.Atoi(fields["borrow_apy"].(string))
+	if err != nil {
+		return
+	}
+	debtItem.DebtAmount, b = new(big.Int).SetString(fields["debt_amount"].(string), 10)
+	if !b {
+		err = errors.New("parse debt_amount fail")
+		return
+	}
+	debtItem.DebtValue, b = new(big.Int).SetString(fields["debt_value"].(string), 10)
+	if !b {
+		err = errors.New("parse debt_value fail")
+		return
+	}
+	debtItem.DolaPoolId = uint16(fields["dola_pool_id"].(float64))
+	debtItem.SupplyApy, err = strconv.Atoi(fields["supply_apy"].(string))
+	if err != nil {
+		return
+	}
+	return
+}
 
 func newCollateralItem(info interface{}) (collateral CollateralItem, err error) {
 	var b bool
@@ -482,18 +508,12 @@ func (c *Contract) GetUserLendingInfo(ctx context.Context, signer types.Address,
 			infos := fields["debt_infos"].([]interface{})
 			userLendingInfo.DebtInfos = make([]DebtItem, 0, len(infos))
 			for _, info := range infos {
-				infoMap := info.(map[string]interface{})
-				innerFields := infoMap["fields"].(map[string]interface{})
-				dolaPoolId := uint16(innerFields["dola_pool_id"].(float64))
-				amount, _ := new(big.Int).SetString(innerFields["debt_amount"].(string), 10)
-				value, _ := new(big.Int).SetString(innerFields["debt_value"].(string), 10)
+				debtItem, err := newDebtItem(info)
+				if err != nil {
+					return err
+				}
 
-				userLendingInfo.DebtInfos = append(userLendingInfo.DebtInfos, DebtItem{
-					Type:       infoMap["type"].(string),
-					DebtAmount: amount,
-					DebtValue:  value,
-					DolaPoolId: dolaPoolId,
-				})
+				userLendingInfo.DebtInfos = append(userLendingInfo.DebtInfos, debtItem)
 			}
 		}
 
