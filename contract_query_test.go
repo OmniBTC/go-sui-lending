@@ -11,6 +11,21 @@ import (
 
 const devnetRpcUrl = "https://fullnode.devnet.sui.io"
 
+func getDevContract() *Contract {
+	return &Contract{
+		client: getDevClient(),
+		// lendingPortalPackageId: getContract().lendingPortalPackageId,
+		externalInterfacePackageId: getExternalInterfacePackageId(),
+		// bridgePoolPackageId: getContract().bridgePoolPackageId,
+		poolManagerInfo: getPoolManager(),
+		// poolState: getContract().poolState,
+		priceOracle: getPriceOracle(),
+		storage:     getStorage(),
+		// wormholeState: getContract().wormholeState,
+		userManagerInfo: getUserManagerInfo(),
+	}
+}
+
 func getDevClient() *client.Client {
 	c, err := client.Dial(devnetRpcUrl)
 	AssertNil(err)
@@ -66,12 +81,12 @@ func getPoolManager() *types.HexData {
 	return poolManager
 }
 
-func getTestAddressAndGas() (*types.Address, *types.HexData) {
+func getTestAddressAndCallOptions() (*types.Address, CallOptions) {
 	address, err := types.NewAddressFromHex("0x4c62953a63373c9cbbbd04a971b9f72109cf9ef3")
 	AssertNil(err)
 	gasObj, err := types.NewHexData("0x1afaa2aa8a502439f9ffdd7b06a47726563f76cf")
 	AssertNil(err)
-	return address, gasObj
+	return address, CallOptions{Gas: gasObj, GasBudget: 10000}
 }
 
 func getUSDTAddress() string {
@@ -79,12 +94,7 @@ func getUSDTAddress() string {
 }
 
 func TestContract_GetDolaTokenLiquidity(t *testing.T) {
-	address, gasObj := getTestAddressAndGas()
-	type fields struct {
-		client                     *client.Client
-		poolManagerInfo            *types.HexData
-		externalInterfacePackageId *types.HexData
-	}
+	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
 		signer      types.Address
@@ -93,33 +103,23 @@ func TestContract_GetDolaTokenLiquidity(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
 	}{
 		{
 			name: "case",
-			fields: fields{
-				client:                     getDevClient(),
-				poolManagerInfo:            getPoolManager(),
-				externalInterfacePackageId: getExternalInterfacePackageId(),
-			},
 			args: args{
 				ctx:         context.Background(),
 				signer:      *address,
 				dolaPoolId:  1,
-				callOptions: CallOptions{Gas: gasObj, GasBudget: 10000},
+				callOptions: callOptions,
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Contract{
-				client:                     tt.fields.client,
-				poolManagerInfo:            tt.fields.poolManagerInfo,
-				externalInterfacePackageId: tt.fields.externalInterfacePackageId,
-			}
+			c := getDevContract()
 			_, err := c.GetDolaTokenLiquidity(tt.args.ctx, tt.args.signer, tt.args.dolaPoolId, tt.args.callOptions)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Contract.GetDolaTokenLiquidity() error = %v, wantErr %v", err, tt.wantErr)
@@ -130,12 +130,7 @@ func TestContract_GetDolaTokenLiquidity(t *testing.T) {
 }
 
 func TestContract_GetAppTokenLiquidity(t *testing.T) {
-	address, gasObj := getTestAddressAndGas()
-	type fields struct {
-		client                     *client.Client
-		externalInterfacePackageId *types.HexData
-		poolManagerInfo            *types.HexData
-	}
+	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
 		signer      types.Address
@@ -145,34 +140,24 @@ func TestContract_GetAppTokenLiquidity(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
 	}{
 		{
 			name: "case",
-			fields: fields{
-				client:                     getDevClient(),
-				poolManagerInfo:            getPoolManager(),
-				externalInterfacePackageId: getExternalInterfacePackageId(),
-			},
 			args: args{
 				ctx:         context.Background(),
 				signer:      *address,
 				appId:       0,
 				dolaPoolId:  1,
-				callOptions: CallOptions{Gas: gasObj, GasBudget: 10000},
+				callOptions: callOptions,
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Contract{
-				client:                     tt.fields.client,
-				externalInterfacePackageId: tt.fields.externalInterfacePackageId,
-				poolManagerInfo:            tt.fields.poolManagerInfo,
-			}
+			c := getDevContract()
 			_, err := c.GetAppTokenLiquidity(tt.args.ctx, tt.args.signer, tt.args.appId, tt.args.dolaPoolId, tt.args.callOptions)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Contract.GetAppTokenLiquidity() error = %v, wantErr %v", err, tt.wantErr)
@@ -183,12 +168,7 @@ func TestContract_GetAppTokenLiquidity(t *testing.T) {
 }
 
 func TestContract_GetDolaUserId(t *testing.T) {
-	address, gasObj := getTestAddressAndGas()
-	type fields struct {
-		client                     *client.Client
-		externalInterfacePackageId *types.HexData
-		userManagerInfo            *types.HexData
-	}
+	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
 		signer      types.Address
@@ -198,34 +178,24 @@ func TestContract_GetDolaUserId(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
 	}{
 		{
 			name: "case",
-			fields: fields{
-				client:                     getDevClient(),
-				externalInterfacePackageId: getExternalInterfacePackageId(),
-				userManagerInfo:            getUserManagerInfo(),
-			},
 			args: args{
 				ctx:         context.Background(),
 				signer:      *address,
 				dolaChainId: 0,
 				user:        address.String(),
-				callOptions: CallOptions{Gas: gasObj, GasBudget: 10000},
+				callOptions: callOptions,
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Contract{
-				client:                     tt.fields.client,
-				externalInterfacePackageId: tt.fields.externalInterfacePackageId,
-				userManagerInfo:            tt.fields.userManagerInfo,
-			}
+			c := getDevContract()
 			_, err := c.GetDolaUserId(tt.args.ctx, tt.args.signer, tt.args.dolaChainId, tt.args.user, tt.args.callOptions)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Contract.GetDolaUserId() error = %v, wantErr %v", err, tt.wantErr)
@@ -236,12 +206,7 @@ func TestContract_GetDolaUserId(t *testing.T) {
 }
 
 func TestContract_GetPoolLiquidity(t *testing.T) {
-	address, gasObj := getTestAddressAndGas()
-	type fields struct {
-		client                     *client.Client
-		externalInterfacePackageId *types.HexData
-		poolManagerInfo            *types.HexData
-	}
+	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
 		signer      types.Address
@@ -251,34 +216,24 @@ func TestContract_GetPoolLiquidity(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
 	}{
 		{
 			name: "case",
-			fields: fields{
-				client:                     getDevClient(),
-				externalInterfacePackageId: getExternalInterfacePackageId(),
-				poolManagerInfo:            getPoolManager(),
-			},
 			args: args{
 				ctx:         context.Background(),
 				signer:      *address,
 				dolaChainId: 0,
 				poolAddress: getUSDTAddress(),
-				callOptions: CallOptions{Gas: gasObj, GasBudget: 10000},
+				callOptions: callOptions,
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Contract{
-				client:                     tt.fields.client,
-				externalInterfacePackageId: tt.fields.externalInterfacePackageId,
-				poolManagerInfo:            tt.fields.poolManagerInfo,
-			}
+			c := getDevContract()
 			_, err := c.GetPoolLiquidity(tt.args.ctx, tt.args.signer, tt.args.dolaChainId, tt.args.poolAddress, tt.args.callOptions)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Contract.GetPoolLiquidity() error = %v, wantErr %v", err, tt.wantErr)
@@ -289,12 +244,7 @@ func TestContract_GetPoolLiquidity(t *testing.T) {
 }
 
 func TestContract_GetAllPoolLiquidity(t *testing.T) {
-	address, gasObj := getTestAddressAndGas()
-	type fields struct {
-		client                     *client.Client
-		externalInterfacePackageId *types.HexData
-		poolManagerInfo            *types.HexData
-	}
+	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
 		signer      types.Address
@@ -303,33 +253,23 @@ func TestContract_GetAllPoolLiquidity(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
 	}{
 		{
 			name: "case",
-			fields: fields{
-				client:                     getDevClient(),
-				externalInterfacePackageId: getExternalInterfacePackageId(),
-				poolManagerInfo:            getPoolManager(),
-			},
 			args: args{
 				ctx:         context.Background(),
 				signer:      *address,
 				dolaPoolId:  getUSDTPoolId(),
-				callOptions: CallOptions{Gas: gasObj, GasBudget: 10000},
+				callOptions: callOptions,
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Contract{
-				client:                     tt.fields.client,
-				externalInterfacePackageId: tt.fields.externalInterfacePackageId,
-				poolManagerInfo:            tt.fields.poolManagerInfo,
-			}
+			c := getDevContract()
 			_, err := c.GetAllPoolLiquidity(tt.args.ctx, tt.args.signer, tt.args.dolaPoolId, tt.args.callOptions)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Contract.GetAllPoolLiquidity() error = %v, wantErr %v", err, tt.wantErr)
@@ -340,12 +280,7 @@ func TestContract_GetAllPoolLiquidity(t *testing.T) {
 }
 
 func TestContract_GetDolaUserAddresses(t *testing.T) {
-	signer, gas := getTestAddressAndGas()
-	type fields struct {
-		client                     *client.Client
-		externalInterfacePackageId *types.HexData
-		userManagerInfo            *types.HexData
-	}
+	signer, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
 		signer      types.Address
@@ -354,33 +289,23 @@ func TestContract_GetDolaUserAddresses(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
 	}{
 		{
 			name: "case",
-			fields: fields{
-				client:                     getDevClient(),
-				externalInterfacePackageId: getExternalInterfacePackageId(),
-				userManagerInfo:            getUserManagerInfo(),
-			},
 			args: args{
 				ctx:         context.Background(),
 				signer:      *signer,
 				dolaUserId:  getUserDolaId(),
-				callOptions: CallOptions{Gas: gas, GasBudget: 10000},
+				callOptions: callOptions,
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Contract{
-				client:                     tt.fields.client,
-				externalInterfacePackageId: tt.fields.externalInterfacePackageId,
-				userManagerInfo:            tt.fields.userManagerInfo,
-			}
+			c := getDevContract()
 			_, err := c.GetDolaUserAddresses(tt.args.ctx, tt.args.signer, tt.args.dolaUserId, tt.args.callOptions)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Contract.GetDolaUserAddresses() error = %v, wantErr %v", err, tt.wantErr)
@@ -391,13 +316,7 @@ func TestContract_GetDolaUserAddresses(t *testing.T) {
 }
 
 func TestContract_GetUserHealthFactor(t *testing.T) {
-	address, gas := getTestAddressAndGas()
-	type fields struct {
-		client                     *client.Client
-		externalInterfacePackageId *types.HexData
-		priceOracle                *types.HexData
-		storage                    *types.HexData
-	}
+	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
 		signer      types.Address
@@ -406,35 +325,23 @@ func TestContract_GetUserHealthFactor(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
 	}{
 		{
 			name: "case",
-			fields: fields{
-				client:                     getDevClient(),
-				externalInterfacePackageId: getExternalInterfacePackageId(),
-				priceOracle:                getPriceOracle(),
-				storage:                    getStorage(),
-			},
 			args: args{
 				ctx:         context.Background(),
 				signer:      *address,
 				dolaUserId:  getUserDolaId(),
-				callOptions: CallOptions{Gas: gas, GasBudget: 10000},
+				callOptions: callOptions,
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Contract{
-				client:                     tt.fields.client,
-				externalInterfacePackageId: tt.fields.externalInterfacePackageId,
-				priceOracle:                tt.fields.priceOracle,
-				storage:                    tt.fields.storage,
-			}
+			c := getDevContract()
 			_, err := c.GetUserHealthFactor(tt.args.ctx, tt.args.signer, tt.args.dolaUserId, tt.args.callOptions)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Contract.GetUserHealthFactor() error = %v, wantErr %v", err, tt.wantErr)
@@ -445,13 +352,7 @@ func TestContract_GetUserHealthFactor(t *testing.T) {
 }
 
 func TestContract_GetAllOraclePrice(t *testing.T) {
-	address, gas := getTestAddressAndGas()
-	type fields struct {
-		client                     *client.Client
-		externalInterfacePackageId *types.HexData
-		priceOracle                *types.HexData
-		storage                    *types.HexData
-	}
+	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
 		signer      types.Address
@@ -459,34 +360,22 @@ func TestContract_GetAllOraclePrice(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
 	}{
 		{
 			name: "case",
-			fields: fields{
-				client:                     getDevClient(),
-				externalInterfacePackageId: getExternalInterfacePackageId(),
-				priceOracle:                getPriceOracle(),
-				storage:                    getStorage(),
-			},
 			args: args{
 				ctx:         context.Background(),
 				signer:      *address,
-				callOptions: CallOptions{Gas: gas, GasBudget: 10000},
+				callOptions: callOptions,
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Contract{
-				client:                     tt.fields.client,
-				externalInterfacePackageId: tt.fields.externalInterfacePackageId,
-				priceOracle:                tt.fields.priceOracle,
-				storage:                    tt.fields.storage,
-			}
+			c := getDevContract()
 			if _, err := c.GetAllOraclePrice(tt.args.ctx, tt.args.signer, tt.args.callOptions); (err != nil) != tt.wantErr {
 				t.Errorf("Contract.GetAllOraclePrice() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -495,12 +384,7 @@ func TestContract_GetAllOraclePrice(t *testing.T) {
 }
 
 func TestContract_GetOraclePrice(t *testing.T) {
-	address, gas := getTestAddressAndGas()
-	type fields struct {
-		client                     *client.Client
-		externalInterfacePackageId *types.HexData
-		priceOracle                *types.HexData
-	}
+	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
 		signer      types.Address
@@ -509,33 +393,23 @@ func TestContract_GetOraclePrice(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
 	}{
 		{
 			name: "case",
-			fields: fields{
-				client:                     getDevClient(),
-				externalInterfacePackageId: getExternalInterfacePackageId(),
-				priceOracle:                getPriceOracle(),
-			},
 			args: args{
 				ctx:         context.Background(),
 				signer:      *address,
 				dolaPoolId:  getUSDTPoolId(),
-				callOptions: CallOptions{Gas: gas, GasBudget: 10000},
+				callOptions: callOptions,
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Contract{
-				client:                     tt.fields.client,
-				externalInterfacePackageId: tt.fields.externalInterfacePackageId,
-				priceOracle:                tt.fields.priceOracle,
-			}
+			c := getDevContract()
 			if _, err := c.GetOraclePrice(tt.args.ctx, tt.args.signer, tt.args.dolaPoolId, tt.args.callOptions); (err != nil) != tt.wantErr {
 				t.Errorf("Contract.GetOraclePrice() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -544,13 +418,7 @@ func TestContract_GetOraclePrice(t *testing.T) {
 }
 
 func TestContract_GetAllReserveInfo(t *testing.T) {
-	address, gas := getTestAddressAndGas()
-	type fields struct {
-		client                     *client.Client
-		externalInterfacePackageId *types.HexData
-		poolManagerInfo            *types.HexData
-		storage                    *types.HexData
-	}
+	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
 		signer      types.Address
@@ -558,34 +426,22 @@ func TestContract_GetAllReserveInfo(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
 	}{
 		{
 			name: "case",
-			fields: fields{
-				client:                     getDevClient(),
-				externalInterfacePackageId: getExternalInterfacePackageId(),
-				poolManagerInfo:            getPoolManager(),
-				storage:                    getStorage(),
-			},
 			args: args{
 				ctx:         context.Background(),
 				signer:      *address,
-				callOptions: CallOptions{Gas: gas, GasBudget: 10000},
+				callOptions: callOptions,
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Contract{
-				client:                     tt.fields.client,
-				externalInterfacePackageId: tt.fields.externalInterfacePackageId,
-				poolManagerInfo:            tt.fields.poolManagerInfo,
-				storage:                    tt.fields.storage,
-			}
+			c := getDevContract()
 			if _, err := c.GetAllReserveInfo(tt.args.ctx, tt.args.signer, tt.args.callOptions); (err != nil) != tt.wantErr {
 				t.Errorf("Contract.GetAllReserveInfo() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -594,13 +450,7 @@ func TestContract_GetAllReserveInfo(t *testing.T) {
 }
 
 func TestContract_GetReserveInfo(t *testing.T) {
-	address, gas := getTestAddressAndGas()
-	type fields struct {
-		client                     *client.Client
-		externalInterfacePackageId *types.HexData
-		poolManagerInfo            *types.HexData
-		storage                    *types.HexData
-	}
+	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
 		signer      types.Address
@@ -609,38 +459,100 @@ func TestContract_GetReserveInfo(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
 	}{
 		{
 			name: "case",
-			fields: fields{
-				client:                     getDevClient(),
-				externalInterfacePackageId: getExternalInterfacePackageId(),
-				poolManagerInfo:            getPoolManager(),
-				storage:                    getStorage(),
-			},
 			args: args{
 				ctx:         context.Background(),
 				signer:      *address,
 				dolaPoolId:  getUSDTPoolId(),
-				callOptions: CallOptions{Gas: gas, GasBudget: 10000},
+				callOptions: callOptions,
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Contract{
-				client:                     tt.fields.client,
-				externalInterfacePackageId: tt.fields.externalInterfacePackageId,
-				poolManagerInfo:            tt.fields.poolManagerInfo,
-				storage:                    tt.fields.storage,
-			}
+			c := getDevContract()
 			_, err := c.GetReserveInfo(tt.args.ctx, tt.args.signer, tt.args.dolaPoolId, tt.args.callOptions)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Contract.GetReserveInfo() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestContract_GetUserCollateral(t *testing.T) {
+	address, callOptions := getTestAddressAndCallOptions()
+	type args struct {
+		ctx         context.Context
+		signer      types.Address
+		dolaUserId  string
+		dolaPoolId  uint16
+		callOptions CallOptions
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "case",
+			args: args{
+				ctx:         context.Background(),
+				signer:      *address,
+				dolaUserId:  getUserDolaId(),
+				dolaPoolId:  getUSDTPoolId(),
+				callOptions: callOptions,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := getDevContract()
+			_, err := c.GetUserCollateral(tt.args.ctx, tt.args.signer, tt.args.dolaUserId, tt.args.dolaPoolId, tt.args.callOptions)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Contract.GetUserCollateral() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestContract_GetUserLendingInfo(t *testing.T) {
+	address, callOptions := getTestAddressAndCallOptions()
+	type args struct {
+		ctx         context.Context
+		signer      types.Address
+		dolaUserId  string
+		callOptions CallOptions
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "case",
+			args: args{
+				ctx:         context.Background(),
+				signer:      *address,
+				dolaUserId:  getUserDolaId(),
+				callOptions: callOptions,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := getDevContract()
+			_, err := c.GetUserLendingInfo(tt.args.ctx, tt.args.signer, tt.args.dolaUserId, tt.args.callOptions)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Contract.GetUserLendingInfo() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})

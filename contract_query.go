@@ -41,7 +41,55 @@ type (
 		DolaPoolId        uint16
 		Pools             []PoolInfo
 	}
+
+	CollateralItem struct {
+		CollateralAmount *big.Int
+		CollateralValue  *big.Int
+		DolaPoolId       uint16
+		BorrowApy        int
+		SupplyApy        int
+	}
+
+	UserLendingInfo struct {
+		TotalCollateralValue *big.Int
+		TotalDebtValue       *big.Int
+		HealthFactor         *big.Int
+		CollateralInfos      []CollateralItem
+		DebtInfos            []DebtItem
+	}
+
+	DebtItem struct {
+		Type       string
+		DebtAmount *big.Int
+		DebtValue  *big.Int
+		DolaPoolId uint16
+	}
 )
+
+func newCollateralItem(info interface{}) (collateral CollateralItem, err error) {
+	var b bool
+	fields := info.(map[string]interface{})["fields"].(map[string]interface{})
+	collateral.BorrowApy, err = strconv.Atoi(fields["borrow_apy"].(string))
+	if err != nil {
+		return
+	}
+	collateral.CollateralAmount, b = new(big.Int).SetString(fields["collateral_amount"].(string), 10)
+	if !b {
+		err = errors.New("parse collateral_amount fail")
+		return
+	}
+	collateral.CollateralValue, b = new(big.Int).SetString(fields["collateral_value"].(string), 10)
+	if !b {
+		err = errors.New("parse collateral_value fail")
+		return
+	}
+	collateral.DolaPoolId = uint16(fields["dola_pool_id"].(float64))
+	collateral.SupplyApy, err = strconv.Atoi(fields["supply_apy"].(string))
+	if err != nil {
+		return
+	}
+	return
+}
 
 func newReserveInfo(info interface{}) (reserveInfo ReserveInfo, err error) {
 	var b bool
@@ -245,29 +293,6 @@ func (c *Contract) GetAllPoolLiquidity(ctx context.Context, signer types.Address
 	return
 }
 
-func (c *Contract) GetUserAllDebt(ctx context.Context, signer types.Address, dolaUserId string, callOptions CallOptions) (err error) {
-	args := []any{
-		*c.storage,
-		dolaUserId,
-	}
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_user_all_debt", []string{}, args, callOptions.Gas, callOptions.GasBudget)
-	if err != nil {
-		return
-	}
-
-	effects, err := c.client.DryRunTransaction(ctx, tx)
-	if err != nil {
-		return
-	}
-
-	//todo parse user all debt
-	err = parseLastEvent(effects, func(event types.Event) error {
-		// fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
-		return nil
-	})
-	return
-}
-
 func (c *Contract) GetUserTokenDebt(ctx context.Context, signer types.Address, dolaUserId string, dolaPoolId uint16, callOptions CallOptions) (debtAmount *big.Int, debtValue *big.Int, err error) {
 	args := []any{
 		*c.storage,
@@ -303,30 +328,7 @@ func (c *Contract) GetUserTokenDebt(ctx context.Context, signer types.Address, d
 	return
 }
 
-func (c *Contract) GetUserAllCollateral(ctx context.Context, signer types.Address, dolaUserId string, callOptions CallOptions) (err error) {
-	args := []any{
-		*c.storage,
-		dolaUserId,
-	}
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_user_all_collateral", []string{}, args, callOptions.Gas, callOptions.GasBudget)
-	if err != nil {
-		return
-	}
-
-	effects, err := c.client.DryRunTransaction(ctx, tx)
-	if err != nil {
-		return
-	}
-
-	//todo parse user all debt
-	err = parseLastEvent(effects, func(event types.Event) error {
-		// fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
-		return nil
-	})
-	return
-}
-
-func (c *Contract) GetUserCollateral(ctx context.Context, signer types.Address, dolaUserId string, dolaPoolId uint16, callOptions CallOptions) (collateralAmount *big.Int, collateralValue *big.Int, err error) {
+func (c *Contract) GetUserCollateral(ctx context.Context, signer types.Address, dolaUserId string, dolaPoolId uint16, callOptions CallOptions) (collateral CollateralItem, err error) {
 	args := []any{
 		*c.storage,
 		*c.priceOracle,
@@ -344,18 +346,8 @@ func (c *Contract) GetUserCollateral(ctx context.Context, signer types.Address, 
 	}
 
 	err = parseLastEvent(effects, func(event types.Event) error {
-		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
-		collateralAmountStr := fields["collateral_amount"].(string)
-		collateralValueStr := fields["collateral_value"].(string)
-		var ok bool
-		collateralAmount, ok = big.NewInt(0).SetString(collateralAmountStr, 10)
-		if !ok {
-			return errors.New("collateralAmount parse error")
-		}
-		collateralValue, ok = big.NewInt(0).SetString(collateralValueStr, 10)
-		if !ok {
-			return errors.New("collateralValue parse error")
-		}
+		eventInfo := event.(map[string]interface{})["moveEvent"].(map[string]interface{})
+		collateral, err = newCollateralItem(eventInfo)
 		return nil
 	})
 	return
@@ -477,18 +469,12 @@ func (c *Contract) GetUserLendingInfo(ctx context.Context, signer types.Address,
 			infos := fields["collateral_infos"].([]interface{})
 			userLendingInfo.CollateralInfos = make([]CollateralItem, 0, len(infos))
 			for _, info := range infos {
-				infoMap := info.(map[string]interface{})
-				innerFields := infoMap["fields"].(map[string]interface{})
-				dolaPoolId := uint16(innerFields["dola_pool_id"].(float64))
-				amount, _ := new(big.Int).SetString(innerFields["collateral_amount"].(string), 10)
-				value, _ := new(big.Int).SetString(innerFields["collateral_value"].(string), 10)
+				collateralInfo, err := newCollateralItem(info)
+				if err != nil {
+					return err
+				}
 
-				userLendingInfo.CollateralInfos = append(userLendingInfo.CollateralInfos, CollateralItem{
-					Type:             infoMap["type"].(string),
-					CollateralAmount: amount,
-					CollateralValue:  value,
-					DolaPoolId:       dolaPoolId,
-				})
+				userLendingInfo.CollateralInfos = append(userLendingInfo.CollateralInfos, collateralInfo)
 			}
 		}
 

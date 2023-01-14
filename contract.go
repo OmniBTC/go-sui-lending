@@ -2,7 +2,6 @@ package gosuilending
 
 import (
 	"context"
-	"math/big"
 
 	"github.com/coming-chat/go-sui/client"
 	"github.com/coming-chat/go-sui/types"
@@ -45,28 +44,6 @@ type RepayArgs struct {
 	WormholeMessageAmount string
 	RepayCoins            []types.ObjectId // vector<Coin<CoinType>>
 	RepayAmount           string
-}
-
-type UserLendingInfo struct {
-	TotalCollateralValue *big.Int
-	TotalDebtValue       *big.Int
-	HealthFactor         *big.Int
-	CollateralInfos      []CollateralItem
-	DebtInfos            []DebtItem
-}
-
-type CollateralItem struct {
-	Type             string
-	CollateralAmount *big.Int
-	CollateralValue  *big.Int
-	DolaPoolId       uint16
-}
-
-type DebtItem struct {
-	Type       string
-	DebtAmount *big.Int
-	DebtValue  *big.Int
-	DolaPoolId uint16
 }
 
 type ContractConfig struct {
