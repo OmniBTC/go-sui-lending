@@ -30,7 +30,56 @@ type (
 		DolaPoolId uint16
 		Price      *big.Int
 	}
+
+	ReserveInfo struct {
+		BorrowApy         int // 200 -> 200/10000=2.0%
+		BorrowCoefficient *big.Int
+		Debt              *big.Int // 100000000 -> 100000000/1e8 = 1
+		Reserve           *big.Int // 100000000 -> 100000000/1e8 = 1
+		SupplyApy         int      // 100 -> 100/10000=1.0%
+		UtilizationRate   int      // 100 -> 100/10000=1.0%
+		DolaPoolId        uint16
+		Pools             []PoolInfo
+	}
 )
+
+func newReserveInfo(info interface{}) (reserveInfo ReserveInfo, err error) {
+	var b bool
+	fields := info.(map[string]interface{})["fields"].(map[string]interface{})
+	reserveInfo.BorrowApy, err = strconv.Atoi(fields["borrow_apy"].(string))
+	if err != nil {
+		return
+	}
+	reserveInfo.BorrowCoefficient, b = new(big.Int).SetString(fields["borrow_coefficient"].(string), 10)
+	if !b {
+		return reserveInfo, errors.New("fail to parse borrow_coefficient")
+	}
+	reserveInfo.Debt, b = new(big.Int).SetString(fields["debt"].(string), 10)
+	if !b {
+		return reserveInfo, errors.New("parse reserve failed")
+	}
+	reserveInfo.Reserve, b = new(big.Int).SetString(fields["reserve"].(string), 10)
+	if !b {
+		return reserveInfo, errors.New("parse reserve failed")
+	}
+	reserveInfo.SupplyApy, err = strconv.Atoi(fields["supply_apy"].(string))
+	if err != nil {
+		return
+	}
+	reserveInfo.UtilizationRate, err = strconv.Atoi(fields["utilization_rate"].(string))
+	if err != nil {
+		return
+	}
+	reserveInfo.DolaPoolId = uint16(fields["dola_pool_id"].(float64))
+	poolsInfo := fields["pools"].([]interface{})
+	pools := make([]PoolInfo, len(poolsInfo))
+	for i := range poolsInfo {
+		pools[i] = newPoolInfo(poolsInfo[i])
+	}
+	reserveInfo.Pools = pools
+
+	return
+}
 
 func newDolaTokenPrice(priceInfo interface{}) DolaTokenPrice {
 	mapInfo := priceInfo.(map[string]interface{})
@@ -312,7 +361,7 @@ func (c *Contract) GetUserCollateral(ctx context.Context, signer types.Address, 
 	return
 }
 
-func (c *Contract) GetAllReserveInfo(ctx context.Context, signer types.Address, callOptions CallOptions) (err error) {
+func (c *Contract) GetAllReserveInfo(ctx context.Context, signer types.Address, callOptions CallOptions) (reserveInfos []ReserveInfo, err error) {
 	args := []any{
 		*c.poolManagerInfo,
 		*c.storage,
@@ -327,9 +376,16 @@ func (c *Contract) GetAllReserveInfo(ctx context.Context, signer types.Address, 
 		return
 	}
 
-	// todo parse event
 	err = parseLastEvent(effects, func(event types.Event) error {
-		// fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
+		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
+		responseReserveInfos := fields["reserve_infos"].([]interface{})
+		reserveInfos = make([]ReserveInfo, len(responseReserveInfos))
+		for i := range responseReserveInfos {
+			reserveInfos[i], err = newReserveInfo(responseReserveInfos[i])
+			if err != nil {
+				return err
+			}
+		}
 		return nil
 	})
 	return
@@ -352,31 +408,12 @@ func (c *Contract) GetReserveInfo(ctx context.Context, signer types.Address, dol
 	}
 
 	err = parseLastEvent(effects, func(event types.Event) error {
-		reserveInfo = &ReserveInfo{}
-		var b bool
-		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
-		reserveInfo.BorrowApy, err = strconv.Atoi(fields["borrow_apy"].(string))
+		info := event.(map[string]interface{})["moveEvent"].(map[string]interface{})
+		res, err := newReserveInfo(info)
 		if err != nil {
 			return err
 		}
-		reserveInfo.Debt, b = new(big.Int).SetString(fields["debt"].(string), 10)
-		if !b {
-			return errors.New("parse reserve failed")
-		}
-		reserveInfo.Reserve, b = new(big.Int).SetString(fields["reserve"].(string), 10)
-		if !b {
-			return errors.New("parse reserve failed")
-		}
-		reserveInfo.SupplyApy, err = strconv.Atoi(fields["supply_apy"].(string))
-		if err != nil {
-			return err
-		}
-		reserveInfo.UtilizationRate, err = strconv.Atoi(fields["utilization_rate"].(string))
-		if err != nil {
-			return err
-		}
-
-		reserveInfo.DolaPoolId = uint16(fields["dola_pool_id"].(float64))
+		reserveInfo = &res
 		return nil
 	})
 	return
@@ -495,7 +532,6 @@ func (c *Contract) GetOraclePrice(ctx context.Context, signer types.Address, dol
 		return
 	}
 
-	// todo parse event
 	err = parseLastEvent(effects, func(event types.Event) error {
 		events := event.(map[string]interface{})["moveEvent"].(map[string]interface{})
 		dolaTokenPrice = newDolaTokenPrice(events)

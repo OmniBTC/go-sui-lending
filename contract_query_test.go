@@ -542,3 +542,107 @@ func TestContract_GetOraclePrice(t *testing.T) {
 		})
 	}
 }
+
+func TestContract_GetAllReserveInfo(t *testing.T) {
+	address, gas := getTestAddressAndGas()
+	type fields struct {
+		client                     *client.Client
+		externalInterfacePackageId *types.HexData
+		poolManagerInfo            *types.HexData
+		storage                    *types.HexData
+	}
+	type args struct {
+		ctx         context.Context
+		signer      types.Address
+		callOptions CallOptions
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "case",
+			fields: fields{
+				client:                     getDevClient(),
+				externalInterfacePackageId: getExternalInterfacePackageId(),
+				poolManagerInfo:            getPoolManager(),
+				storage:                    getStorage(),
+			},
+			args: args{
+				ctx:         context.Background(),
+				signer:      *address,
+				callOptions: CallOptions{Gas: gas, GasBudget: 10000},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &Contract{
+				client:                     tt.fields.client,
+				externalInterfacePackageId: tt.fields.externalInterfacePackageId,
+				poolManagerInfo:            tt.fields.poolManagerInfo,
+				storage:                    tt.fields.storage,
+			}
+			if _, err := c.GetAllReserveInfo(tt.args.ctx, tt.args.signer, tt.args.callOptions); (err != nil) != tt.wantErr {
+				t.Errorf("Contract.GetAllReserveInfo() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestContract_GetReserveInfo(t *testing.T) {
+	address, gas := getTestAddressAndGas()
+	type fields struct {
+		client                     *client.Client
+		externalInterfacePackageId *types.HexData
+		poolManagerInfo            *types.HexData
+		storage                    *types.HexData
+	}
+	type args struct {
+		ctx         context.Context
+		signer      types.Address
+		dolaPoolId  uint16
+		callOptions CallOptions
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "case",
+			fields: fields{
+				client:                     getDevClient(),
+				externalInterfacePackageId: getExternalInterfacePackageId(),
+				poolManagerInfo:            getPoolManager(),
+				storage:                    getStorage(),
+			},
+			args: args{
+				ctx:         context.Background(),
+				signer:      *address,
+				dolaPoolId:  getUSDTPoolId(),
+				callOptions: CallOptions{Gas: gas, GasBudget: 10000},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &Contract{
+				client:                     tt.fields.client,
+				externalInterfacePackageId: tt.fields.externalInterfacePackageId,
+				poolManagerInfo:            tt.fields.poolManagerInfo,
+				storage:                    tt.fields.storage,
+			}
+			_, err := c.GetReserveInfo(tt.args.ctx, tt.args.signer, tt.args.dolaPoolId, tt.args.callOptions)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Contract.GetReserveInfo() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}

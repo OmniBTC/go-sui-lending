@@ -47,15 +47,6 @@ type RepayArgs struct {
 	RepayAmount           string
 }
 
-type ReserveInfo struct {
-	BorrowApy       int      // 200 -> 200/10000=2.0%
-	Debt            *big.Int // 100000000 -> 100000000/1e8 = 1
-	Reserve         *big.Int // 100000000 -> 100000000/1e8 = 1
-	SupplyApy       int      // 100 -> 100/10000=1.0%
-	UtilizationRate int      // 100 -> 100/10000=1.0%
-	DolaPoolId      uint16
-}
-
 type UserLendingInfo struct {
 	TotalCollateralValue *big.Int
 	TotalDebtValue       *big.Int
