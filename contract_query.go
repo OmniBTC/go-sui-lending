@@ -54,8 +54,12 @@ type (
 		TotalCollateralValue *big.Int
 		TotalDebtValue       *big.Int
 		HealthFactor         *big.Int
-		CollateralInfos      []CollateralItem
-		DebtInfos            []DebtItem
+		NetApy               int // profit_state decide positive or negtive
+		TotalBorrowApy       int
+		TotalSupplyApu       int
+
+		CollateralInfos []CollateralItem
+		DebtInfos       []DebtItem
 	}
 
 	DebtItem struct {
@@ -490,6 +494,22 @@ func (c *Contract) GetUserLendingInfo(ctx context.Context, signer types.Address,
 		userLendingInfo.TotalCollateralValue, _ = new(big.Int).SetString(fields["total_collateral_value"].(string), 10)
 		userLendingInfo.TotalDebtValue, _ = new(big.Int).SetString(fields["total_debt_value"].(string), 10)
 		userLendingInfo.HealthFactor, _ = new(big.Int).SetString(fields["health_factor"].(string), 10)
+		profitState := fields["profit_state"].(bool)
+		userLendingInfo.NetApy, err = strconv.Atoi(fields["net_apy"].(string))
+		if err != nil {
+			return err
+		}
+		if !profitState {
+			userLendingInfo.NetApy = -userLendingInfo.NetApy
+		}
+		userLendingInfo.TotalBorrowApy, err = strconv.Atoi(fields["total_borrow_apy"].(string))
+		if err != nil {
+			return err
+		}
+		userLendingInfo.TotalSupplyApu, err = strconv.Atoi(fields["total_supply_apy"].(string))
+		if err != nil {
+			return err
+		}
 
 		if fields["collateral_infos"] != "" {
 			infos := fields["collateral_infos"].([]interface{})

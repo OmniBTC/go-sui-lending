@@ -9,20 +9,38 @@ import (
 	"github.com/coming-chat/go-sui/types"
 )
 
-const devnetRpcUrl = "https://fullnode.devnet.sui.io"
+const (
+	devnetRpcUrl          = "https://fullnode.devnet.sui.io"
+	devLendingPortal      = "0x0ea2ebec77a430932699c598d286cdd72cff25c3"
+	devExternalInterfaces = "0xd302b6887e60b2018d046061f01d0d1241ad9455"
+	devWormholeBridge     = "0x9286925aa8f12b71ca9398133dd0becedde9ee4d"
+
+	devUSDTAddress     = "7b03c8e330e491c2a1bad31b43b781b9d7d3114c::coins::USDT"
+	devUSDTPoolId      = 1
+	devPoolManager     = "0x3cdf3790026de572fce939d68a8a911683955368"
+	devPoolState       = "0x23d65c7641659947a767668f94a1922f7ab50a73"
+	devPriceOracle     = "0x192d0d500c64968fb449aff0180834c9db4d4894"
+	devStorage         = "0xc8d9e30e317bd9c669b5bbd49f728ebc891d4919"
+	devUserManagerInfo = "0xf1ebd9a417554434fbcc8b689f5a3a2f3f802caf"
+	devWormholeState   = "0x5cdc1e4feb51a4eef459893844f512e65cffd284"
+
+	devTestUserId      = "12"
+	devTestUserAddress = "0x4c62953a63373c9cbbbd04a971b9f72109cf9ef3"
+	devTestGasObj      = "0x13d20042f2ba28420ae999922f450d2274cb15b2"
+)
 
 func getDevContract() *Contract {
 	return &Contract{
-		client: getDevClient(),
-		// lendingPortalPackageId: getContract().lendingPortalPackageId,
-		externalInterfacePackageId: getExternalInterfacePackageId(),
-		// bridgePoolPackageId: getContract().bridgePoolPackageId,
-		poolManagerInfo: getPoolManager(),
-		// poolState: getContract().poolState,
-		priceOracle: getPriceOracle(),
-		storage:     getStorage(),
-		// wormholeState: getContract().wormholeState,
-		userManagerInfo: getUserManagerInfo(),
+		client:                     getDevClient(),
+		lendingPortalPackageId:     toHex(devLendingPortal),
+		externalInterfacePackageId: toHex(devExternalInterfaces),
+		bridgePoolPackageId:        toHex(devWormholeBridge),
+		poolManagerInfo:            toHex(devPoolManager),
+		poolState:                  toHex(devPoolState),
+		priceOracle:                toHex(devPriceOracle),
+		storage:                    toHex(devStorage),
+		wormholeState:              toHex(devWormholeState),
+		userManagerInfo:            toHex(devUserManagerInfo),
 	}
 }
 
@@ -39,58 +57,28 @@ func AssertNil(err error) {
 	}
 }
 
-func getUserManagerInfo() *types.HexData {
-	t, err := types.NewHexData("0x66b49dd9b363e46038a1d31993362890890ad9af")
-	AssertNil(err)
-	return t
-}
-
-func getExternalInterfacePackageId() *types.HexData {
-	externalInterfacePackageId, err := types.NewHexData("0xfc6568c500a90c4ec220a36eb969e4415a399f17")
-	AssertNil(err)
-	return externalInterfacePackageId
-}
-
-func getPriceOracle() *types.HexData {
-	priceOracle, err := types.NewHexData("0x44f0e3fcd7fc3d297bfead7d6ea3ff339b353aff")
-	AssertNil(err)
-	return priceOracle
-}
-
-func getSuiDolaChainId() uint16 {
-	return 0
-}
-
-func getStorage() *types.HexData {
-	storage, err := types.NewHexData("0x22e55281cb7974950c5a6849406fed7eb64f1ac5")
-	AssertNil(err)
-	return storage
-}
-
 func getUSDTPoolId() uint16 {
-	return 1
+	return devUSDTPoolId
 }
 
 func getUserDolaId() string {
-	return "6"
+	return devTestUserId
 }
 
-func getPoolManager() *types.HexData {
-	poolManager, err := types.NewHexData("0x1cd53845462cac4fb0b8676c7858c1b5b1626c77")
+func toHex(str string) *types.HexData {
+	hexData, err := types.NewHexData(str)
 	AssertNil(err)
-	return poolManager
+	return hexData
 }
 
 func getTestAddressAndCallOptions() (*types.Address, CallOptions) {
-	address, err := types.NewAddressFromHex("0x4c62953a63373c9cbbbd04a971b9f72109cf9ef3")
-	AssertNil(err)
-	gasObj, err := types.NewHexData("0x1afaa2aa8a502439f9ffdd7b06a47726563f76cf")
-	AssertNil(err)
+	address := toHex(devTestUserAddress)
+	gasObj := toHex(devTestGasObj)
 	return address, CallOptions{Gas: gasObj, GasBudget: 10000}
 }
 
 func getUSDTAddress() string {
-	return "4a74f62ed7b44ee8dbfb0fc542172ab7ac1da096::coins::USDT"
+	return devUSDTAddress
 }
 
 func TestContract_GetDolaTokenLiquidity(t *testing.T) {
