@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	devnetRpcUrl          = "https://fullnode.devnet.sui.io"
+	devnetRpcUrl          = "https://fullnode.testnet.sui.io"
 	devLendingPortal      = "0x0ea2ebec77a430932699c598d286cdd72cff25c3"
 	devExternalInterfaces = "0xd302b6887e60b2018d046061f01d0d1241ad9455"
 	devWormholeBridge     = "0x9286925aa8f12b71ca9398133dd0becedde9ee4d"

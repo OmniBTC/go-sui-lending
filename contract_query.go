@@ -56,7 +56,7 @@ type (
 		HealthFactor         *big.Int
 		NetApy               int // profit_state decide positive or negtive
 		TotalBorrowApy       int
-		TotalSupplyApu       int
+		TotalSupplyApy       int
 
 		CollateralInfos []CollateralItem
 		DebtInfos       []DebtItem
@@ -506,7 +506,7 @@ func (c *Contract) GetUserLendingInfo(ctx context.Context, signer types.Address,
 		if err != nil {
 			return err
 		}
-		userLendingInfo.TotalSupplyApu, err = strconv.Atoi(fields["total_supply_apy"].(string))
+		userLendingInfo.TotalSupplyApy, err = strconv.Atoi(fields["total_supply_apy"].(string))
 		if err != nil {
 			return err
 		}
