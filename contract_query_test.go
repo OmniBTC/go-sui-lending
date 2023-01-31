@@ -24,7 +24,7 @@ const (
 	devUserManagerInfo = "0x789ef32e90f5d97f0475f127f501ce31257da033"
 	devWormholeState   = "0x69d54fb067de394c88d18f6217c950a780bc148c"
 
-	devTestUserId      = "12"
+	devTestUserId      = "230"
 	devTestUserAddress = "0x4c62953a63373c9cbbbd04a971b9f72109cf9ef3"
 	devTestGasObj      = "0x0e304469df7958ab1beeac819dd92877eb3bd165"
 )
