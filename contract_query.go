@@ -594,6 +594,8 @@ func (c *Contract) GetAllOraclePrice(ctx context.Context, signer types.Address, 
 	return
 }
 
+// GetDolaUserId return dola_user_id for (dola_chain_id, address) pair
+// if not exist, an error return
 func (c *Contract) GetDolaUserId(ctx context.Context, signer types.Address, dolaChainId uint16, user string, callOptions CallOptions) (userId string, err error) {
 	args := []any{
 		*c.userManagerInfo,

@@ -13,37 +13,29 @@ type CallOptions struct {
 }
 
 type SupplyArgs struct {
-	WormholeMessageCoins  []types.ObjectId // vector<Coin<SUI>>
-	WormholeMessageAmount string
-	Pool                  types.HexData
-	DepositCoins          []types.ObjectId // vector<Coin<CoinType>>
-	DepositAmount         string
+	Pool          types.HexData
+	DepositCoins  []types.ObjectId // vector<Coin<CoinType>>
+	DepositAmount string
 }
 
 type WithdrawArgs struct {
-	Pool                  types.HexData
-	Receiver              string
-	DstChain              string
-	WormholeMessageCoins  []types.ObjectId // vector<Coin<SUI>>
-	WormholeMessageAmount string
-	Amount                string
+	Pool     types.HexData
+	Receiver string
+	DstChain string
+	Amount   string
 }
 
 type BorrowArgs struct {
-	Pool                  types.HexData
-	Receiver              string
-	DstChain              string
-	WormholeMessageCoins  []types.ObjectId // vector<Coin<SUI>>
-	WormholeMessageAmount string
-	Amount                string
+	Pool     types.HexData
+	Receiver string
+	DstChain string
+	Amount   string
 }
 
 type RepayArgs struct {
-	Pool                  types.HexData
-	WormholeMessageCoins  []types.ObjectId // vector<Coin<SUI>>
-	WormholeMessageAmount string
-	RepayCoins            []types.ObjectId // vector<Coin<CoinType>>
-	RepayAmount           string
+	Pool        types.HexData
+	RepayCoins  []types.ObjectId // vector<Coin<CoinType>>
+	RepayAmount string
 }
 
 type ContractConfig struct {
@@ -56,6 +48,8 @@ type ContractConfig struct {
 	Storage                    string
 	WormholeState              string
 	UserManagerInfo            string
+	CoreState                  string
+	LendingPortal              string
 }
 
 type Contract struct {
@@ -70,6 +64,8 @@ type Contract struct {
 	storage                    *types.HexData
 	wormholeState              *types.HexData
 	userManagerInfo            *types.HexData
+	coreState                  *types.HexData
+	lendingPortal              *types.HexData
 }
 
 func NewContract(client *client.Client, config ContractConfig) (*Contract, error) {
@@ -102,15 +98,22 @@ func NewContract(client *client.Client, config ContractConfig) (*Contract, error
 	if contract.userManagerInfo, err = types.NewHexData(config.UserManagerInfo); err != nil {
 		return nil, err
 	}
+	if contract.coreState, err = types.NewHexData(config.CoreState); err != nil {
+		return nil, err
+	}
+	if contract.lendingPortal, err = types.NewHexData(config.LendingPortal); err != nil {
+		return nil, err
+	}
 	return contract, nil
 }
 
 func (c *Contract) Supply(ctx context.Context, signer types.Address, typeArgs []string, supplyArgs SupplyArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
 	args := []any{
-		*c.poolState,
-		*c.wormholeState,
-		supplyArgs.WormholeMessageCoins,
-		supplyArgs.WormholeMessageAmount,
+		*c.storage,
+		*c.priceOracle,
+		*c.lendingPortal,
+		*c.userManagerInfo,
+		*c.poolManagerInfo,
 		supplyArgs.Pool,
 		supplyArgs.DepositCoins,
 		supplyArgs.DepositAmount,
@@ -121,13 +124,16 @@ func (c *Contract) Supply(ctx context.Context, signer types.Address, typeArgs []
 
 func (c *Contract) Withdraw(ctx context.Context, signer types.Address, typeArgs []string, withdrawArgs WithdrawArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
 	args := []any{
-		withdrawArgs.Pool,
-		*c.poolState,
+		*c.storage,
+		*c.priceOracle,
+		*c.coreState,
+		*c.lendingPortal,
 		*c.wormholeState,
+		*c.poolManagerInfo,
+		*c.userManagerInfo,
+		withdrawArgs.Pool,
 		withdrawArgs.Receiver,
 		withdrawArgs.DstChain,
-		withdrawArgs.WormholeMessageCoins,
-		withdrawArgs.WormholeMessageAmount,
 		withdrawArgs.Amount,
 	}
 	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "withdraw", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
@@ -136,13 +142,16 @@ func (c *Contract) Withdraw(ctx context.Context, signer types.Address, typeArgs 
 
 func (c *Contract) Borrow(ctx context.Context, signer types.Address, typeArgs []string, borrowArgs BorrowArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
 	args := []any{
-		borrowArgs.Pool,
-		*c.poolState,
+		*c.storage,
+		*c.priceOracle,
+		*c.coreState,
+		*c.lendingPortal,
 		*c.wormholeState,
+		*c.poolManagerInfo,
+		*c.userManagerInfo,
+		borrowArgs.Pool,
 		borrowArgs.Receiver,
 		borrowArgs.DstChain,
-		borrowArgs.WormholeMessageCoins,
-		borrowArgs.WormholeMessageAmount,
 		borrowArgs.Amount,
 	}
 	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "borrow", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
@@ -151,11 +160,12 @@ func (c *Contract) Borrow(ctx context.Context, signer types.Address, typeArgs []
 
 func (c *Contract) Repay(ctx context.Context, signer types.Address, typeArgs []string, repayArgs RepayArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
 	args := []any{
+		*c.storage,
+		*c.priceOracle,
+		*c.lendingPortal,
+		*c.userManagerInfo,
+		*c.poolManagerInfo,
 		repayArgs.Pool,
-		*c.poolState,
-		*c.wormholeState,
-		repayArgs.WormholeMessageCoins,
-		repayArgs.WormholeMessageAmount,
 		repayArgs.RepayCoins,
 		repayArgs.RepayAmount,
 	}

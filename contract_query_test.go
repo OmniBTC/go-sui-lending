@@ -11,22 +11,22 @@ import (
 
 const (
 	devnetRpcUrl          = "https://fullnode.testnet.sui.io"
-	devLendingPortal      = "0x0ea2ebec77a430932699c598d286cdd72cff25c3"
-	devExternalInterfaces = "0xd302b6887e60b2018d046061f01d0d1241ad9455"
-	devWormholeBridge     = "0x9286925aa8f12b71ca9398133dd0becedde9ee4d"
+	devLendingPortal      = "0x725996f982c461ddb1060cb64a7b47246e7332be"
+	devExternalInterfaces = "0xaa65494974bfa11425bfbff836db69cf7950f3ef"
+	devWormholeBridge     = "0x10ec199c006b64d40511ca7f2f0527051577d23f"
 
-	devUSDTAddress     = "7b03c8e330e491c2a1bad31b43b781b9d7d3114c::coins::USDT"
+	devUSDTAddress     = "72b846eca3c7f91961ec3cae20441be96a21e1fe::coins::USDT"
 	devUSDTPoolId      = 1
-	devPoolManager     = "0x3cdf3790026de572fce939d68a8a911683955368"
-	devPoolState       = "0x23d65c7641659947a767668f94a1922f7ab50a73"
-	devPriceOracle     = "0x192d0d500c64968fb449aff0180834c9db4d4894"
-	devStorage         = "0xc8d9e30e317bd9c669b5bbd49f728ebc891d4919"
-	devUserManagerInfo = "0xf1ebd9a417554434fbcc8b689f5a3a2f3f802caf"
-	devWormholeState   = "0x5cdc1e4feb51a4eef459893844f512e65cffd284"
+	devPoolManager     = "0xa6c1415b41a0a768fb49dcdcc1d2587f8956e739"
+	devPoolState       = "0x3037ba7392653eb9a4850b7c471a839959b09de0"
+	devPriceOracle     = "0x39b21e8cf71ca3c6d6c6bd03a01753d9526a5502"
+	devStorage         = "0xf709a28d31c38a1be1e61fee1e1e77217d9ba554"
+	devUserManagerInfo = "0x789ef32e90f5d97f0475f127f501ce31257da033"
+	devWormholeState   = "0x69d54fb067de394c88d18f6217c950a780bc148c"
 
 	devTestUserId      = "12"
 	devTestUserAddress = "0x4c62953a63373c9cbbbd04a971b9f72109cf9ef3"
-	devTestGasObj      = "0x13d20042f2ba28420ae999922f450d2274cb15b2"
+	devTestGasObj      = "0x0e304469df7958ab1beeac819dd92877eb3bd165"
 )
 
 func getDevContract() *Contract {
