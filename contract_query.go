@@ -32,14 +32,15 @@ type (
 	}
 
 	ReserveInfo struct {
-		BorrowApy         int // 200 -> 200/10000=2.0%
-		BorrowCoefficient *big.Int
-		Debt              *big.Int // 100000000 -> 100000000/1e8 = 1
-		Reserve           *big.Int // 100000000 -> 100000000/1e8 = 1
-		SupplyApy         int      // 100 -> 100/10000=1.0%
-		UtilizationRate   int      // 100 -> 100/10000=1.0%
-		DolaPoolId        uint16
-		Pools             []PoolInfo
+		BorrowApy             int // 200 -> 200/10000=2.0%
+		BorrowCoefficient     *big.Int
+		CollateralCoefficient *big.Int
+		Debt                  *big.Int // 100000000 -> 100000000/1e8 = 1
+		Reserve               *big.Int // 100000000 -> 100000000/1e8 = 1
+		SupplyApy             int      // 100 -> 100/10000=1.0%
+		UtilizationRate       int      // 100 -> 100/10000=1.0%
+		DolaPoolId            uint16
+		Pools                 []PoolInfo
 	}
 
 	CollateralItem struct {
@@ -131,6 +132,10 @@ func newReserveInfo(info interface{}) (reserveInfo ReserveInfo, err error) {
 	reserveInfo.BorrowCoefficient, b = new(big.Int).SetString(fields["borrow_coefficient"].(string), 10)
 	if !b {
 		return reserveInfo, errors.New("fail to parse borrow_coefficient")
+	}
+	reserveInfo.CollateralCoefficient, b = new(big.Int).SetString(fields["collateral_coefficient"].(string), 10)
+	if !b {
+		return reserveInfo, errors.New("fail to parse collateral_coefficient")
 	}
 	reserveInfo.Debt, b = new(big.Int).SetString(fields["debt"].(string), 10)
 	if !b {
