@@ -5,6 +5,8 @@ github.com/coming-chat/go-sui v0.0.0-20230109090012-465fe388d837 h1:6C27rdxa/BGy
 github.com/coming-chat/go-sui v0.0.0-20230109090012-465fe388d837/go.mod h1:IT0m3ZSiKSXgitJT6rMuMAlfNal4ounjryXWqoNgrd8=
 github.com/coming-chat/go-sui v0.0.0-20230113032427-957159fd53c7 h1:3wK0xqAl4J3fE64z0MHqy4iS9GmURRpg25kdHwmnNmc=
 github.com/coming-chat/go-sui v0.0.0-20230113032427-957159fd53c7/go.mod h1:IT0m3ZSiKSXgitJT6rMuMAlfNal4ounjryXWqoNgrd8=
+github.com/coming-chat/go-sui v0.0.0-20230131031554-d3d99c6b4ae6 h1:g7dZCKnXAlUgbXSdy6mgwPt8hJGhTOEx8X1V/QL5ZQg=
+github.com/coming-chat/go-sui v0.0.0-20230131031554-d3d99c6b4ae6/go.mod h1:D3s+A1WjI5fg/htr/F1OR72+MGEFFtMoheufXfMDDPA=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/stretchr/testify v1.8.0 h1:pSgiaMZlXftHpm5L7V1+rVB+AZJydKsMxsQBIJw4PKk=
