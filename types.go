@@ -78,12 +78,18 @@ func ParseLendingCoreEvent(event interface{}) (result *LendingCoreEvent, err err
 	result = &LendingCoreEvent{}
 	eventMap := event.(map[string]interface{})
 	var fields map[string]interface{}
-	result.MoveEventHeader, fields, err = parseMoveEventHeader(eventMap)
+	if result.MoveEventHeader, fields, err = parseMoveEventHeader(eventMap); err != nil {
+		return
+	}
 	result.SourceChainId = uint16(fields["source_chain_id"].(float64))
 	result.DstChainId = uint16(fields["dst_chain_id"].(float64))
 	result.Receiver = parseByteSlice(fields["receiver"].([]interface{}))
-	result.Nonce, err = strconv.ParseUint(fields["nonce"].(string), 10, 64)
-	result.Amount, err = strconv.ParseUint(fields["amount"].(string), 10, 64)
+	if result.Nonce, err = strconv.ParseUint(fields["nonce"].(string), 10, 64); err != nil {
+		return
+	}
+	if result.Amount, err = strconv.ParseUint(fields["amount"].(string), 10, 64); err != nil {
+		return
+	}
 	result.CallType = int(fields["call_type"].(float64))
 	result.PoolAddress = parseByteSlice(fields["pool_address"].([]interface{}))
 	return
@@ -98,12 +104,18 @@ func ParseLendingPortalEvent(event interface{}) (result *LendingPortalEvent, err
 	result = &LendingPortalEvent{}
 	eventMap := event.(map[string]interface{})
 	var fields map[string]interface{}
-	result.MoveEventHeader, fields, err = parseMoveEventHeader(eventMap)
+	if result.MoveEventHeader, fields, err = parseMoveEventHeader(eventMap); err != nil {
+		return
+	}
 	result.SourceChainId = uint16(fields["source_chain_id"].(float64))
 	result.DstChainId = uint16(fields["dst_chain_id"].(float64))
 	result.Receiver = parseByteSlice(fields["receiver"].([]interface{}))
-	result.Nonce, err = strconv.ParseUint(fields["nonce"].(string), 10, 64)
-	result.Amount, err = strconv.ParseUint(fields["amount"].(string), 10, 64)
+	if result.Nonce, err = strconv.ParseUint(fields["nonce"].(string), 10, 64); err != nil {
+		return
+	}
+	if result.Amount, err = strconv.ParseUint(fields["amount"].(string), 10, 64); err != nil {
+		return
+	}
 	result.Sender = fields["sender"].(string)
 	result.CallType = int(fields["call_type"].(float64))
 	result.DolaPoolAddress = parseByteSlice(fields["dola_pool_address"].([]interface{}))
@@ -119,9 +131,15 @@ func ParseLocalLendingEvent(event interface{}) (result *LocalLendingEvent, err e
 	result = &LocalLendingEvent{}
 	eventMap := event.(map[string]interface{})
 	var fields map[string]interface{}
-	result.MoveEventHeader, fields, err = parseMoveEventHeader(eventMap)
-	result.Nonce, err = strconv.ParseUint(fields["nonce"].(string), 10, 64)
-	result.Amount, err = strconv.ParseUint(fields["amount"].(string), 10, 64)
+	if result.MoveEventHeader, fields, err = parseMoveEventHeader(eventMap); err != nil {
+		return
+	}
+	if result.Nonce, err = strconv.ParseUint(fields["nonce"].(string), 10, 64); err != nil {
+		return
+	}
+	if result.Amount, err = strconv.ParseUint(fields["amount"].(string), 10, 64); err != nil {
+		return
+	}
 	result.Sender = fields["sender"].(string)
 	result.CallType = int(fields["call_type"].(float64))
 	result.DolaPoolAddress = parseByteSlice(fields["dola_pool_address"].([]interface{}))
@@ -131,7 +149,7 @@ func ParseLocalLendingEvent(event interface{}) (result *LocalLendingEvent, err e
 func parseByteSlice(s []interface{}) []byte {
 	result := make([]byte, len(s))
 	for i, v := range s {
-		result[i] = v.(byte)
+		result[i] = byte(v.(float64))
 	}
 	return result
 }
