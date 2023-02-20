@@ -10,29 +10,29 @@ import (
 )
 
 const (
-	devnetRpcUrl          = "https://fullnode.testnet.sui.io"
-	devLendingPortal      = "0x725996f982c461ddb1060cb64a7b47246e7332be"
-	devExternalInterfaces = "0xaa65494974bfa11425bfbff836db69cf7950f3ef"
-	devWormholeBridge     = "0x10ec199c006b64d40511ca7f2f0527051577d23f"
+	devnetRpcUrl              = "https://fullnode.devnet.sui.io"
+	devLendingPortalPackageId = "0x0df92f7b748c47d3caf0450acd666bc080b8d923"
+	devExternalInterfaces     = "0x6238067382b88d81f4ee7410b179e5278705d6ef"
+	devWormholeBridge         = "0x73d584432c695975829daaf05bf5f2e2d35e9057" //
 
-	devUSDTAddress     = "72b846eca3c7f91961ec3cae20441be96a21e1fe::coins::USDT"
+	devUSDTAddress     = "b77dc99976a25a4162f23fb19de535bf21d15766::coins::USDT"
 	devUSDTPoolId      = 1
-	devPoolManager     = "0xa6c1415b41a0a768fb49dcdcc1d2587f8956e739"
-	devPoolState       = "0x3037ba7392653eb9a4850b7c471a839959b09de0"
-	devPriceOracle     = "0x39b21e8cf71ca3c6d6c6bd03a01753d9526a5502"
-	devStorage         = "0xf709a28d31c38a1be1e61fee1e1e77217d9ba554"
-	devUserManagerInfo = "0x789ef32e90f5d97f0475f127f501ce31257da033"
-	devWormholeState   = "0x69d54fb067de394c88d18f6217c950a780bc148c"
+	devPoolManager     = "0x5fbb6b21ff9242bdf69322c1bef804c8d2beceab"
+	devPoolState       = "0x03f88e0cb2e35537e2cf6167ce165d238ee70b6d"
+	devPriceOracle     = "0x31d6132d6181e0c0a61db5cdc19c261671b5f243"
+	devStorage         = "0xae50809178927a8c5418d742f691f1c9edecd4bd"
+	devUserManagerInfo = "0x8d3aab85b96f6f202994416ae540d649ca2d18cb"
+	devWormholeState   = "0xe558313313037b879950b07e91358641263c62be"
 
 	devTestUserId      = "230"
 	devTestUserAddress = "0x4c62953a63373c9cbbbd04a971b9f72109cf9ef3"
-	devTestGasObj      = "0x0e304469df7958ab1beeac819dd92877eb3bd165"
+	devTestGasObj      = "0x071e88fb503e74b6cb77a57b177ea501cbce9aee"
 )
 
 func getDevContract() *Contract {
 	return &Contract{
 		client:                     getDevClient(),
-		lendingPortalPackageId:     toHex(devLendingPortal),
+		lendingPortalPackageId:     toHex(devLendingPortalPackageId),
 		externalInterfacePackageId: toHex(devExternalInterfaces),
 		bridgePoolPackageId:        toHex(devWormholeBridge),
 		poolManagerInfo:            toHex(devPoolManager),
