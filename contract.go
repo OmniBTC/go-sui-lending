@@ -50,6 +50,7 @@ type ContractConfig struct {
 	UserManagerInfo            string
 	CoreState                  string
 	LendingPortal              string
+	LendingCore                string
 }
 
 type Contract struct {
