@@ -20,7 +20,7 @@ const (
 type (
 	EventHeader struct {
 		Timestamp uint64
-		TxDigest  types.Base64Data
+		TxDigest  string
 		Id        types.EventID
 	}
 
@@ -172,18 +172,10 @@ func parseMoveEventHeader(event map[string]interface{}) (result MoveEventHeader,
 
 func parseEventHeader(event map[string]interface{}) (result EventHeader, err error) {
 	result.Timestamp = uint64(event["timestamp"].(float64))
-	if d, err := types.NewBase64Data(event["txDigest"].(string)); err != nil {
-		return result, err
-	} else {
-		result.TxDigest = *d
-	}
+	result.TxDigest = event["txDigest"].(string)
 	if id, ok := event["id"]; ok {
 		idMap := id.(map[string]interface{})
-		txd, err := types.NewBase64Data(idMap["txDigest"].(string))
-		if err != nil {
-			return result, err
-		}
-		result.Id.TxDigest = *txd
+		result.Id.TxDigest = idMap["txDigest"].(string)
 		result.Id.EventSeq = int64(idMap["eventSeq"].(float64))
 	} else {
 		err = errors.New("event no id field")
