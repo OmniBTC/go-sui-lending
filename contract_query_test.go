@@ -24,7 +24,7 @@ const (
 	devUserManagerInfo = "0x8d3aab85b96f6f202994416ae540d649ca2d18cb"
 	devWormholeState   = "0xe558313313037b879950b07e91358641263c62be"
 
-	devTestUserId      = "230"
+	devTestUserId      = "13"
 	devTestUserAddress = "0x4c62953a63373c9cbbbd04a971b9f72109cf9ef3"
 	devTestGasObj      = "0x071e88fb503e74b6cb77a57b177ea501cbce9aee"
 )
@@ -294,11 +294,12 @@ func TestContract_GetDolaUserAddresses(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := getDevContract()
-			_, err := c.GetDolaUserAddresses(tt.args.ctx, tt.args.signer, tt.args.dolaUserId, tt.args.callOptions)
+			v, err := c.GetDolaUserAddresses(tt.args.ctx, tt.args.signer, tt.args.dolaUserId, tt.args.callOptions)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Contract.GetDolaUserAddresses() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			println(v)
 		})
 	}
 }

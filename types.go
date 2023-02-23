@@ -60,11 +60,13 @@ type (
 	LendingCoreEvent struct {
 		MoveEventHeader MoveEventHeader
 		Nonce           uint64
+		SenderUserId    uint64
 		SourceChainId   uint16
 		DstChainId      uint16
-		PoolAddress     []byte
+		DolaPoolId      uint16
 		Receiver        []byte
 		Amount          uint64
+		LiquidateUserId uint64
 		CallType        int
 	}
 )
@@ -91,7 +93,13 @@ func ParseLendingCoreEvent(event interface{}) (result *LendingCoreEvent, err err
 		return
 	}
 	result.CallType = int(fields["call_type"].(float64))
-	result.PoolAddress = parseByteSlice(fields["pool_address"].([]interface{}))
+	if result.SenderUserId, err = strconv.ParseUint(fields["sender_user_id"].(string), 10, 64); err != nil {
+		return
+	}
+	result.DolaPoolId = uint16(fields["dola_pool_id"].(float64))
+	if result.LiquidateUserId, err = strconv.ParseUint(fields["liquidate_user_id"].(string), 10, 64); err != nil {
+		return
+	}
 	return
 }
 
