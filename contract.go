@@ -54,6 +54,7 @@ type ContractConfig struct {
 	LendingPortal              string
 	LendingCore                string
 	Clock                      string
+	PoolApproval               string
 }
 
 type Contract struct {
@@ -71,6 +72,7 @@ type Contract struct {
 	coreState                  *types.HexData
 	lendingPortal              *types.HexData
 	clock                      *types.HexData
+	poolApproval               *types.HexData
 }
 
 func NewContract(client *client.Client, config ContractConfig) (*Contract, error) {
@@ -110,6 +112,9 @@ func NewContract(client *client.Client, config ContractConfig) (*Contract, error
 		return nil, err
 	}
 	if contract.clock, err = types.NewHexData(config.Clock); err != nil {
+		return nil, err
+	}
+	if contract.poolApproval, err = types.NewHexData(config.PoolApproval); err != nil {
 		return nil, err
 	}
 	return contract, nil
@@ -169,6 +174,7 @@ func (c *Contract) WithdrawRemote(ctx context.Context, signer types.Address, typ
 
 func (c *Contract) BorrowLocal(ctx context.Context, signer types.Address, typeArgs []string, borrowArgs BorrowArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
 	args := []any{
+		*c.poolApproval,
 		*c.storage,
 		*c.priceOracle,
 		*c.clock,
