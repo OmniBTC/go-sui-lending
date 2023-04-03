@@ -19,10 +19,12 @@ type SupplyArgs struct {
 }
 
 type WithdrawArgs struct {
-	Pool     types.HexData
-	Receiver string
-	DstChain string
-	Amount   string
+	Pool           types.HexData
+	Receiver       string
+	DstChain       string
+	Amount         string
+	RelayFeeCoins  []types.ObjectId
+	RelayFeeAmount string
 }
 
 type BorrowArgs struct {
@@ -51,6 +53,7 @@ type ContractConfig struct {
 	CoreState                  string
 	LendingPortal              string
 	LendingCore                string
+	Clock                      string
 }
 
 type Contract struct {
@@ -67,6 +70,7 @@ type Contract struct {
 	userManagerInfo            *types.HexData
 	coreState                  *types.HexData
 	lendingPortal              *types.HexData
+	clock                      *types.HexData
 }
 
 func NewContract(client *client.Client, config ContractConfig) (*Contract, error) {
@@ -105,6 +109,9 @@ func NewContract(client *client.Client, config ContractConfig) (*Contract, error
 	if contract.lendingPortal, err = types.NewHexData(config.LendingPortal); err != nil {
 		return nil, err
 	}
+	if contract.clock, err = types.NewHexData(config.Clock); err != nil {
+		return nil, err
+	}
 	return contract, nil
 }
 
@@ -112,6 +119,7 @@ func (c *Contract) Supply(ctx context.Context, signer types.Address, typeArgs []
 	args := []any{
 		*c.storage,
 		*c.priceOracle,
+		*c.clock,
 		*c.lendingPortal,
 		*c.userManagerInfo,
 		*c.poolManagerInfo,
@@ -123,10 +131,26 @@ func (c *Contract) Supply(ctx context.Context, signer types.Address, typeArgs []
 	return resp, err
 }
 
-func (c *Contract) Withdraw(ctx context.Context, signer types.Address, typeArgs []string, withdrawArgs WithdrawArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
+func (c *Contract) WithdrawLocal(ctx context.Context, signer types.Address, typeArgs []string, withdrawArgs WithdrawArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
 	args := []any{
 		*c.storage,
 		*c.priceOracle,
+		*c.clock,
+		*c.lendingPortal,
+		*c.poolManagerInfo,
+		*c.userManagerInfo,
+		withdrawArgs.Pool,
+		withdrawArgs.Amount,
+	}
+	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "portal", "withdraw_local", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
+	return resp, err
+}
+
+func (c *Contract) WithdrawRemote(ctx context.Context, signer types.Address, typeArgs []string, withdrawArgs WithdrawArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
+	args := []any{
+		*c.storage,
+		*c.priceOracle,
+		*c.clock,
 		*c.coreState,
 		*c.lendingPortal,
 		*c.wormholeState,
@@ -136,8 +160,10 @@ func (c *Contract) Withdraw(ctx context.Context, signer types.Address, typeArgs 
 		withdrawArgs.Receiver,
 		withdrawArgs.DstChain,
 		withdrawArgs.Amount,
+		withdrawArgs.RelayFeeCoins,
+		withdrawArgs.RelayFeeAmount,
 	}
-	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "portal", "withdraw", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
+	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "portal", "withdraw_local", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
 	return resp, err
 }
 
