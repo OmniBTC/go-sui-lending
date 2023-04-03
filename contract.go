@@ -167,21 +167,18 @@ func (c *Contract) WithdrawRemote(ctx context.Context, signer types.Address, typ
 	return resp, err
 }
 
-func (c *Contract) Borrow(ctx context.Context, signer types.Address, typeArgs []string, borrowArgs BorrowArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
+func (c *Contract) BorrowLocal(ctx context.Context, signer types.Address, typeArgs []string, borrowArgs BorrowArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
 	args := []any{
 		*c.storage,
 		*c.priceOracle,
-		*c.coreState,
+		*c.clock,
 		*c.lendingPortal,
-		*c.wormholeState,
 		*c.poolManagerInfo,
 		*c.userManagerInfo,
 		borrowArgs.Pool,
-		borrowArgs.Receiver,
-		borrowArgs.DstChain,
 		borrowArgs.Amount,
 	}
-	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "borrow", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
+	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "borrow_local", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
 	return resp, err
 }
 

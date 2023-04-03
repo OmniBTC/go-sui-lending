@@ -13,11 +13,11 @@ import (
 
 type (
 	PoolInfo struct {
-		Type            string
-		PoolLiquidity   *big.Int
-		PoolAddressType string
-		DolaChainId     uint16
-		DolaAddress     string // hex string. 0x123
+		PoolLiquidity      *big.Int
+		DolaChainId        uint16
+		DolaAddress        string   // hex string. 0x123
+		PoolEquilibriumFee *big.Int // u256
+		PoolWeight         *big.Int // u256
 	}
 
 	DolaUserAddress struct {
@@ -74,7 +74,7 @@ type (
 
 func newDebtItem(info interface{}) (debtItem DebtItem, err error) {
 	var b bool
-	fields := info.(map[string]interface{})["fields"].(map[string]interface{})
+	fields := info.(map[string]interface{})
 	debtItem.BorrowApy, err = strconv.Atoi(fields["borrow_apy"].(string))
 	if err != nil {
 		return
@@ -165,8 +165,7 @@ func newReserveInfo(parsedJson interface{}) (reserveInfo ReserveInfo, err error)
 }
 
 func newDolaTokenPrice(priceInfo interface{}) DolaTokenPrice {
-	mapInfo := priceInfo.(map[string]interface{})
-	fields := mapInfo["fields"].(map[string]interface{})
+	fields := priceInfo.(map[string]interface{})
 	price, _ := new(big.Int).SetString(fields["price"].(string), 10)
 	return DolaTokenPrice{
 		Decimal:    int(fields["decimal"].(float64)),
@@ -176,8 +175,7 @@ func newDolaTokenPrice(priceInfo interface{}) DolaTokenPrice {
 }
 
 func newDolaUserAddress(info interface{}) DolaUserAddress {
-	mapInfo := info.(map[string]interface{})
-	fields := mapInfo["fields"].(map[string]interface{})
+	fields := info.(map[string]interface{})
 	return DolaUserAddress{
 		DolaChainId: uint16(fields["dola_chain_id"].(float64)),
 		DolaAddress: newUserAddress(fields["dola_address"]),
@@ -186,18 +184,18 @@ func newDolaUserAddress(info interface{}) DolaUserAddress {
 
 func newPoolInfo(info interface{}) PoolInfo {
 	var poolInfo PoolInfo
-	mapInfo := info.(map[string]interface{})
-	poolInfo.Type = mapInfo["type"].(string)
+	infoFields := info.(map[string]interface{})
 
-	infoFields := mapInfo["fields"].(map[string]interface{})
 	poolInfo.PoolLiquidity, _ = new(big.Int).SetString(infoFields["pool_liquidity"].(string), 10)
 
 	poolAddress := infoFields["pool_address"].(map[string]interface{})
-	poolInfo.PoolAddressType = poolAddress["type"].(string)
+	poolInfo.DolaChainId = uint16(poolAddress["dola_chain_id"].(float64))
+	poolInfo.DolaAddress = newDolaAddress(poolInfo.DolaChainId, poolAddress["dola_address"])
 
-	poolAddressField := poolAddress["fields"].(map[string]interface{})
-	poolInfo.DolaChainId = uint16(poolAddressField["dola_chain_id"].(float64))
-	poolInfo.DolaAddress = newDolaAddress(poolInfo.DolaChainId, poolAddressField["dola_address"])
+	poolInfo.PoolWeight, _ = new(big.Int).SetString(infoFields["pool_equilibrium_fee"].(string), 10)
+
+	poolInfo.PoolEquilibriumFee, _ = new(big.Int).SetString(infoFields["pool_weight"].(string), 10)
+
 	return poolInfo
 }
 

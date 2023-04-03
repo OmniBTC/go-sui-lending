@@ -24,7 +24,7 @@ const (
 	devUserManagerInfo = "0x270434bfc0de627d8236e02f10e45beeb341462f6a6457b7659089be781f8468"
 	devWormholeState   = "0xb35a426ed4b8b310645ebd978f29944de17bff73397271b5d59695b753d39ace"
 
-	devTestUserId      = "13"
+	devTestUserId      = "8"
 	devTestUserAddress = "0x79e54dcebd85b45b6f447358d529a6c08687e3f98c6e9cd790238299fdedeabc"
 	devTestGasObj      = "0x299ece633f11f5aff97f8527cd0283fd2e724b2a48c7b8876348122d19c343a8"
 )
@@ -74,7 +74,7 @@ func toHex(str string) *types.HexData {
 func getTestAddressAndCallOptions() (*types.Address, CallOptions) {
 	address := toHex(devTestUserAddress)
 	gasObj := toHex(devTestGasObj)
-	return address, CallOptions{Gas: gasObj, GasBudget: 10_000_000}
+	return address, CallOptions{Gas: gasObj, GasBudget: 30_000_000}
 }
 
 func getUSDTAddress() string {
