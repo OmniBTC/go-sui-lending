@@ -21,7 +21,7 @@ type (
 	EventHeader struct {
 		Timestamp uint64
 		TxDigest  string
-		Id        types.EventID
+		Id        types.EventId
 	}
 
 	MoveEventHeader struct {
@@ -184,7 +184,7 @@ func parseEventHeader(event map[string]interface{}) (result EventHeader, err err
 	if id, ok := event["id"]; ok {
 		idMap := id.(map[string]interface{})
 		result.Id.TxDigest = idMap["txDigest"].(string)
-		result.Id.EventSeq = int64(idMap["eventSeq"].(float64))
+		result.Id.EventSeq = uint64(idMap["eventSeq"].(float64))
 	} else {
 		err = errors.New("event no id field")
 	}

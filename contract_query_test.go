@@ -10,23 +10,23 @@ import (
 )
 
 const (
-	devnetRpcUrl              = "https://fullnode.devnet.sui.io"
-	devLendingPortalPackageId = "0x0df92f7b748c47d3caf0450acd666bc080b8d923"
-	devExternalInterfaces     = "0x6238067382b88d81f4ee7410b179e5278705d6ef"
-	devWormholeBridge         = "0x73d584432c695975829daaf05bf5f2e2d35e9057" //
+	devnetRpcUrl              = "https://fullnode.testnet.sui.io"
+	devLendingPortalPackageId = "0x5b81c31943358fcf8f20d2c9b92adf6b47062aa4b01afb2e5c901920807c3e09"
+	devExternalInterfaces     = "0x25bf584ec396b75ee3ab0367a5b6ebdb82f8fd8bf42f5bd00c281464d604a994"
+	devWormholeBridge         = "0xe198cbf3b61678ba33be2a53965c4d68a2b55d00aea67af9038f54c4dba1ec61" //
 
-	devUSDTAddress     = "b77dc99976a25a4162f23fb19de535bf21d15766::coins::USDT"
+	devUSDTAddress     = "54fc06a12aeed0752c6db5d949fcf4554bd320ca69676ee9d3085ba946b91af0::coins::USDT"
 	devUSDTPoolId      = 1
-	devPoolManager     = "0x5fbb6b21ff9242bdf69322c1bef804c8d2beceab"
-	devPoolState       = "0x03f88e0cb2e35537e2cf6167ce165d238ee70b6d"
-	devPriceOracle     = "0x31d6132d6181e0c0a61db5cdc19c261671b5f243"
-	devStorage         = "0xae50809178927a8c5418d742f691f1c9edecd4bd"
-	devUserManagerInfo = "0x8d3aab85b96f6f202994416ae540d649ca2d18cb"
-	devWormholeState   = "0xe558313313037b879950b07e91358641263c62be"
+	devPoolManager     = "0x7b84fae163835c88ea5a8b05a257ccd211bb3c330c63d1f2f19c725d8cf15d11"
+	devPoolState       = "0x846bca7df86db919d0bc44d3b328664c4b7bd85b82ea5a20208ccb31d2535d27"
+	devPriceOracle     = "0xf16e8e7741c31361ae59547f2ec21c5402d719bccf53e04d53b2e9c369116ae6"
+	devStorage         = "0x219a09c981bf165d9bbc40341593777d9391af4c8b8463d1dbbb974b8c34900b"
+	devUserManagerInfo = "0x270434bfc0de627d8236e02f10e45beeb341462f6a6457b7659089be781f8468"
+	devWormholeState   = "0xb35a426ed4b8b310645ebd978f29944de17bff73397271b5d59695b753d39ace"
 
 	devTestUserId      = "13"
-	devTestUserAddress = "0x4c62953a63373c9cbbbd04a971b9f72109cf9ef3"
-	devTestGasObj      = "0x071e88fb503e74b6cb77a57b177ea501cbce9aee"
+	devTestUserAddress = "0x79e54dcebd85b45b6f447358d529a6c08687e3f98c6e9cd790238299fdedeabc"
+	devTestGasObj      = "0x299ece633f11f5aff97f8527cd0283fd2e724b2a48c7b8876348122d19c343a8"
 )
 
 func getDevContract() *Contract {
@@ -74,7 +74,7 @@ func toHex(str string) *types.HexData {
 func getTestAddressAndCallOptions() (*types.Address, CallOptions) {
 	address := toHex(devTestUserAddress)
 	gasObj := toHex(devTestGasObj)
-	return address, CallOptions{Gas: gasObj, GasBudget: 10000}
+	return address, CallOptions{Gas: gasObj, GasBudget: 10_000_000}
 }
 
 func getUSDTAddress() string {

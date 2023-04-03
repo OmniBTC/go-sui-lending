@@ -97,9 +97,9 @@ func newDebtItem(info interface{}) (debtItem DebtItem, err error) {
 	return
 }
 
-func newCollateralItem(info interface{}) (collateral CollateralItem, err error) {
+func newCollateralItem(parsedJson interface{}) (collateral CollateralItem, err error) {
 	var b bool
-	fields := info.(map[string]interface{})["fields"].(map[string]interface{})
+	fields := parsedJson.(map[string]interface{})
 	collateral.BorrowApy, err = strconv.Atoi(fields["borrow_apy"].(string))
 	if err != nil {
 		return
@@ -122,9 +122,9 @@ func newCollateralItem(info interface{}) (collateral CollateralItem, err error) 
 	return
 }
 
-func newReserveInfo(info interface{}) (reserveInfo ReserveInfo, err error) {
+func newReserveInfo(parsedJson interface{}) (reserveInfo ReserveInfo, err error) {
 	var b bool
-	fields := info.(map[string]interface{})["fields"].(map[string]interface{})
+	fields := parsedJson.(map[string]interface{})
 	reserveInfo.BorrowApy, err = strconv.Atoi(fields["borrow_apy"].(string))
 	if err != nil {
 		return
@@ -236,8 +236,8 @@ func (c *Contract) GetDolaTokenLiquidity(ctx context.Context, signer types.Addre
 		return
 	}
 
-	err = parseLastEvent(effects, func(event types.Event) error {
-		tokenLiquidity := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})["token_liquidity"].(string)
+	err = parseLastEvent(effects, func(event types.SuiEvent) error {
+		tokenLiquidity := event.ParsedJson.(map[string]interface{})["token_liquidity"].(string)
 		liquidity, _ = big.NewInt(0).SetString(tokenLiquidity, 10)
 		return nil
 	})
@@ -260,8 +260,8 @@ func (c *Contract) GetAppTokenLiquidity(ctx context.Context, signer types.Addres
 		return
 	}
 
-	err = parseLastEvent(effects, func(event types.Event) error {
-		tokenLiquidity := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})["token_liquidity"].(string)
+	err = parseLastEvent(effects, func(event types.SuiEvent) error {
+		tokenLiquidity := event.ParsedJson.(map[string]interface{})["token_liquidity"].(string)
 		var b bool
 		liquidity, b = big.NewInt(0).SetString(tokenLiquidity, 10)
 		if !b {
@@ -289,8 +289,8 @@ func (c *Contract) GetPoolLiquidity(ctx context.Context, signer types.Address, d
 		return
 	}
 
-	err = parseLastEvent(effects, func(event types.Event) error {
-		tokenLiquidity := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})["pool_liquidity"].(string)
+	err = parseLastEvent(effects, func(event types.SuiEvent) error {
+		tokenLiquidity := event.ParsedJson.(map[string]interface{})["pool_liquidity"].(string)
 		var b bool
 		liquidity, b = big.NewInt(0).SetString(tokenLiquidity, 10)
 		if !b {
@@ -317,8 +317,8 @@ func (c *Contract) GetAllPoolLiquidity(ctx context.Context, signer types.Address
 		return
 	}
 
-	err = parseLastEvent(effects, func(event types.Event) error {
-		poolInfosData := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})["pool_infos"].([]interface{})
+	err = parseLastEvent(effects, func(event types.SuiEvent) error {
+		poolInfosData := event.ParsedJson.(map[string]interface{})["pool_infos"].([]interface{})
 		poolInfos = make([]PoolInfo, len(poolInfosData))
 		for i := range poolInfosData {
 			poolInfos[i] = newPoolInfo(poolInfosData[i])
@@ -345,8 +345,8 @@ func (c *Contract) GetUserTokenDebt(ctx context.Context, signer types.Address, d
 		return
 	}
 
-	err = parseLastEvent(effects, func(event types.Event) error {
-		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
+	err = parseLastEvent(effects, func(event types.SuiEvent) error {
+		fields := event.ParsedJson.(map[string]interface{})
 		debtAmountStr := fields["debt_amount"].(string)
 		debtValueStr := fields["debt_value"].(string)
 		var ok bool
@@ -380,9 +380,8 @@ func (c *Contract) GetUserCollateral(ctx context.Context, signer types.Address, 
 		return
 	}
 
-	err = parseLastEvent(effects, func(event types.Event) error {
-		eventInfo := event.(map[string]interface{})["moveEvent"].(map[string]interface{})
-		collateral, err = newCollateralItem(eventInfo)
+	err = parseLastEvent(effects, func(event types.SuiEvent) error {
+		collateral, err = newCollateralItem(event.ParsedJson)
 		return nil
 	})
 	return
@@ -403,8 +402,8 @@ func (c *Contract) GetAllReserveInfo(ctx context.Context, signer types.Address, 
 		return
 	}
 
-	err = parseLastEvent(effects, func(event types.Event) error {
-		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
+	err = parseLastEvent(effects, func(event types.SuiEvent) error {
+		fields := event.ParsedJson.(map[string]interface{})
 		responseReserveInfos := fields["reserve_infos"].([]interface{})
 		reserveInfos = make([]ReserveInfo, len(responseReserveInfos))
 		for i := range responseReserveInfos {
@@ -434,9 +433,8 @@ func (c *Contract) GetReserveInfo(ctx context.Context, signer types.Address, dol
 		return
 	}
 
-	err = parseLastEvent(effects, func(event types.Event) error {
-		info := event.(map[string]interface{})["moveEvent"].(map[string]interface{})
-		res, err := newReserveInfo(info)
+	err = parseLastEvent(effects, func(event types.SuiEvent) error {
+		res, err := newReserveInfo(event.ParsedJson)
 		if err != nil {
 			return err
 		}
@@ -464,8 +462,8 @@ func (c *Contract) GetUserAllowedBorrow(ctx context.Context, signer types.Addres
 		return
 	}
 
-	err = parseLastEvent(effects, func(event types.Event) error {
-		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
+	err = parseLastEvent(effects, func(event types.SuiEvent) error {
+		fields := event.ParsedJson.(map[string]interface{})
 		amount, _ = big.NewInt(0).SetString(fields["borrow_amount"].(string), 10)
 		if amount.Cmp(big.NewInt(0)) == 0 {
 			if fields["reason"] != "" && fields["reason"] != nil {
@@ -493,8 +491,8 @@ func (c *Contract) GetUserLendingInfo(ctx context.Context, signer types.Address,
 		return
 	}
 
-	err = parseLastEvent(effects, func(event types.Event) error {
-		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
+	err = parseLastEvent(effects, func(event types.SuiEvent) error {
+		fields := event.ParsedJson.(map[string]interface{})
 		userLendingInfo = &UserLendingInfo{}
 		userLendingInfo.TotalCollateralValue, _ = new(big.Int).SetString(fields["total_collateral_value"].(string), 10)
 		userLendingInfo.TotalDebtValue, _ = new(big.Int).SetString(fields["total_debt_value"].(string), 10)
@@ -563,9 +561,8 @@ func (c *Contract) GetOraclePrice(ctx context.Context, signer types.Address, dol
 		return
 	}
 
-	err = parseLastEvent(effects, func(event types.Event) error {
-		events := event.(map[string]interface{})["moveEvent"].(map[string]interface{})
-		dolaTokenPrice = newDolaTokenPrice(events)
+	err = parseLastEvent(effects, func(event types.SuiEvent) error {
+		dolaTokenPrice = newDolaTokenPrice(event.ParsedJson)
 		return nil
 	})
 	return
@@ -587,8 +584,8 @@ func (c *Contract) GetAllOraclePrice(ctx context.Context, signer types.Address, 
 		return
 	}
 
-	err = parseLastEvent(effects, func(event types.Event) error {
-		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
+	err = parseLastEvent(effects, func(event types.SuiEvent) error {
+		fields := event.ParsedJson.(map[string]interface{})
 		tokenPrices := fields["token_prices"].([]interface{})
 		prices = make([]DolaTokenPrice, len(tokenPrices))
 		for i, item := range tokenPrices {
@@ -617,8 +614,8 @@ func (c *Contract) GetDolaUserId(ctx context.Context, signer types.Address, dola
 		return
 	}
 
-	err = parseLastEvent(effects, func(event types.Event) error {
-		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
+	err = parseLastEvent(effects, func(event types.SuiEvent) error {
+		fields := event.ParsedJson.(map[string]interface{})
 		userId = fields["dola_user_id"].(string)
 		return nil
 	})
@@ -640,8 +637,8 @@ func (c *Contract) GetDolaUserAddresses(ctx context.Context, signer types.Addres
 		return
 	}
 
-	err = parseLastEvent(effects, func(event types.Event) error {
-		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
+	err = parseLastEvent(effects, func(event types.SuiEvent) error {
+		fields := event.ParsedJson.(map[string]interface{})
 		addresses := fields["dola_user_addresses"].([]interface{})
 		dolaUserAddresses = make([]DolaUserAddress, len(addresses))
 		for i, item := range addresses {
@@ -668,20 +665,20 @@ func (c *Contract) GetUserHealthFactor(ctx context.Context, signer types.Address
 		return
 	}
 
-	err = parseLastEvent(effects, func(event types.Event) error {
-		fields := event.(map[string]interface{})["moveEvent"].(map[string]interface{})["fields"].(map[string]interface{})
+	err = parseLastEvent(effects, func(event types.SuiEvent) error {
+		fields := event.ParsedJson.(map[string]interface{})
 		healthFactor, _ = new(big.Int).SetString(fields["health_factor"].(string), 10)
 		return nil
 	})
 	return
 }
 
-func parseLastEvent(effects *types.TransactionEffects, f func(event types.Event) error) (err error) {
-	if effects.Status.Status != "success" {
-		return errors.New(effects.Status.Error)
+func parseLastEvent(dryRunResponse *types.DryRunTransactionBlockResponse, f func(event types.SuiEvent) error) (err error) {
+	if dryRunResponse.Effects.Status.Status != "success" {
+		return errors.New(dryRunResponse.Effects.Status.Error)
 	}
 
-	if len(effects.Events) == 0 {
+	if len(dryRunResponse.Events) == 0 {
 		return errors.New("invalid events")
 	}
 
@@ -691,5 +688,5 @@ func parseLastEvent(effects *types.TransactionEffects, f func(event types.Event)
 		}
 	}()
 
-	return f(effects.Events[len(effects.Events)-1])
+	return f(dryRunResponse.Events[len(dryRunResponse.Events)-1])
 }
