@@ -1,7 +1,6 @@
 package gosuilending
 
 import (
-	"errors"
 	"strconv"
 
 	"github.com/coming-chat/go-sui/types"
@@ -71,16 +70,15 @@ type (
 	}
 )
 
-func ParseLendingCoreEvent(event interface{}) (result *LendingCoreEvent, err error) {
+func ParseLendingCoreEvent(event types.SuiEvent) (result *LendingCoreEvent, err error) {
 	defer func() {
 		if tmpErr := recover(); tmpErr != nil {
 			err = tmpErr.(error)
 		}
 	}()
 	result = &LendingCoreEvent{}
-	eventMap := event.(map[string]interface{})
-	var fields map[string]interface{}
-	if result.MoveEventHeader, fields, err = parseMoveEventHeader(eventMap); err != nil {
+	fields := event.ParsedJson.(map[string]interface{})
+	if result.MoveEventHeader, err = parseMoveEventHeader(event); err != nil {
 		return
 	}
 	result.SourceChainId = uint16(fields["source_chain_id"].(float64))
@@ -89,6 +87,7 @@ func ParseLendingCoreEvent(event interface{}) (result *LendingCoreEvent, err err
 	if result.Nonce, err = strconv.ParseUint(fields["nonce"].(string), 10, 64); err != nil {
 		return
 	}
+	// contract use u256 for compute, all amount is in u64
 	if result.Amount, err = strconv.ParseUint(fields["amount"].(string), 10, 64); err != nil {
 		return
 	}
@@ -103,16 +102,15 @@ func ParseLendingCoreEvent(event interface{}) (result *LendingCoreEvent, err err
 	return
 }
 
-func ParseLendingPortalEvent(event interface{}) (result *LendingPortalEvent, err error) {
+func ParseLendingPortalEvent(event types.SuiEvent) (result *LendingPortalEvent, err error) {
 	defer func() {
 		if tmpErr := recover(); tmpErr != nil {
 			err = tmpErr.(error)
 		}
 	}()
 	result = &LendingPortalEvent{}
-	eventMap := event.(map[string]interface{})
-	var fields map[string]interface{}
-	if result.MoveEventHeader, fields, err = parseMoveEventHeader(eventMap); err != nil {
+	fields := event.ParsedJson.(map[string]interface{})
+	if result.MoveEventHeader, err = parseMoveEventHeader(event); err != nil {
 		return
 	}
 	result.SourceChainId = uint16(fields["source_chain_id"].(float64))
@@ -130,16 +128,15 @@ func ParseLendingPortalEvent(event interface{}) (result *LendingPortalEvent, err
 	return
 }
 
-func ParseLocalLendingEvent(event interface{}) (result *LocalLendingEvent, err error) {
+func ParseLocalLendingEvent(event types.SuiEvent) (result *LocalLendingEvent, err error) {
 	defer func() {
 		if tmpErr := recover(); tmpErr != nil {
 			err = tmpErr.(error)
 		}
 	}()
 	result = &LocalLendingEvent{}
-	eventMap := event.(map[string]interface{})
-	var fields map[string]interface{}
-	if result.MoveEventHeader, fields, err = parseMoveEventHeader(eventMap); err != nil {
+	fields := event.ParsedJson.(map[string]interface{})
+	if result.MoveEventHeader, err = parseMoveEventHeader(event); err != nil {
 		return
 	}
 	if result.Nonce, err = strconv.ParseUint(fields["nonce"].(string), 10, 64); err != nil {
@@ -162,31 +159,22 @@ func parseByteSlice(s []interface{}) []byte {
 	return result
 }
 
-func parseMoveEventHeader(event map[string]interface{}) (result MoveEventHeader, fields map[string]interface{}, err error) {
+func parseMoveEventHeader(event types.SuiEvent) (result MoveEventHeader, err error) {
 	if result.EventHeader, err = parseEventHeader(event); err != nil {
 		return
 	}
 
-	moveEvent := event["event"].(map[string]interface{})["moveEvent"].(map[string]interface{})
-	fields = moveEvent["fields"].(map[string]interface{})
-
-	result.PackageId = moveEvent["packageId"].(string)
-	result.TransactionModule = moveEvent["transactionModule"].(string)
-	result.Sender = moveEvent["sender"].(string)
-	result.Type = moveEvent["type"].(string)
-	result.Bcs = moveEvent["bcs"].(string)
+	result.PackageId = event.PackageId.String()
+	result.TransactionModule = event.TransactionModule
+	result.Sender = event.Sender.String()
+	result.Type = event.Type
+	result.Bcs = event.Bcs
 	return
 }
 
-func parseEventHeader(event map[string]interface{}) (result EventHeader, err error) {
-	result.Timestamp = uint64(event["timestamp"].(float64))
-	result.TxDigest = event["txDigest"].(string)
-	if id, ok := event["id"]; ok {
-		idMap := id.(map[string]interface{})
-		result.Id.TxDigest = idMap["txDigest"].(string)
-		result.Id.EventSeq = uint64(idMap["eventSeq"].(float64))
-	} else {
-		err = errors.New("event no id field")
-	}
+func parseEventHeader(event types.SuiEvent) (result EventHeader, err error) {
+	result.Timestamp = uint64(*event.TimestampMs)
+	result.TxDigest = event.Id.TxDigest
+	result.Id = event.Id
 	return
 }
