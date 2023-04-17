@@ -224,7 +224,7 @@ func (c *Contract) GetDolaTokenLiquidity(ctx context.Context, signer types.Addre
 		dolaPoolId,
 	}
 
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_dola_token_liquidity", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_dola_token_liquidity", []string{}, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	if err != nil {
 		return
 	}
@@ -248,7 +248,7 @@ func (c *Contract) GetAppTokenLiquidity(ctx context.Context, signer types.Addres
 		appId,
 		dolaPoolId,
 	}
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_app_token_liquidity", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_app_token_liquidity", []string{}, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	if err != nil {
 		return
 	}
@@ -277,7 +277,7 @@ func (c *Contract) GetPoolLiquidity(ctx context.Context, signer types.Address, d
 		dolaChainId,
 		poolAddress,
 	}
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_pool_liquidity", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_pool_liquidity", []string{}, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	if err != nil {
 		return
 	}
@@ -305,7 +305,7 @@ func (c *Contract) GetAllPoolLiquidity(ctx context.Context, signer types.Address
 		*c.poolManagerInfo,
 		dolaPoolId,
 	}
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_all_pool_liquidity", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_all_pool_liquidity", []string{}, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	if err != nil {
 		return
 	}
@@ -333,7 +333,7 @@ func (c *Contract) GetUserTokenDebt(ctx context.Context, signer types.Address, d
 		dolaUserId,
 		dolaPoolId,
 	}
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_user_token_debt", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_user_token_debt", []string{}, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	if err != nil {
 		return
 	}
@@ -368,7 +368,7 @@ func (c *Contract) GetUserCollateral(ctx context.Context, signer types.Address, 
 		dolaUserId,
 		dolaPoolId,
 	}
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_user_collateral", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_user_collateral", []string{}, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	if err != nil {
 		return
 	}
@@ -390,7 +390,7 @@ func (c *Contract) GetAllReserveInfo(ctx context.Context, signer types.Address, 
 		*c.poolManagerInfo,
 		*c.storage,
 	}
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_all_reserve_info", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_all_reserve_info", []string{}, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	if err != nil {
 		return
 	}
@@ -421,7 +421,7 @@ func (c *Contract) GetReserveInfo(ctx context.Context, signer types.Address, dol
 		*c.storage,
 		dolaPoolId,
 	}
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_reserve_info", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_reserve_info", []string{}, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	if err != nil {
 		return
 	}
@@ -450,7 +450,7 @@ func (c *Contract) GetUserAllowedBorrow(ctx context.Context, signer types.Addres
 		dolaUserId,
 		borrowPoolId,
 	}
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_user_allowed_borrow", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_user_allowed_borrow", []string{}, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	if err != nil {
 		return
 	}
@@ -479,7 +479,7 @@ func (c *Contract) GetUserLendingInfo(ctx context.Context, signer types.Address,
 		*c.priceOracle,
 		dolaUserId,
 	}
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_user_lending_info", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_user_lending_info", []string{}, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	if err != nil {
 		return
 	}
@@ -549,7 +549,7 @@ func (c *Contract) GetOraclePrice(ctx context.Context, signer types.Address, dol
 		dolaPoolId,
 	}
 
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_oracle_price", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_oracle_price", []string{}, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	if err != nil {
 		return
 	}
@@ -572,7 +572,7 @@ func (c *Contract) GetAllOraclePrice(ctx context.Context, signer types.Address, 
 		*c.priceOracle,
 	}
 
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_all_oracle_price", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_all_oracle_price", []string{}, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	if err != nil {
 		return
 	}
@@ -602,7 +602,7 @@ func (c *Contract) GetDolaUserId(ctx context.Context, signer types.Address, dola
 		dolaChainId,
 		user,
 	}
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_dola_user_id", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_dola_user_id", []string{}, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	if err != nil {
 		return
 	}
@@ -625,7 +625,7 @@ func (c *Contract) GetDolaUserAddresses(ctx context.Context, signer types.Addres
 		*c.userManagerInfo,
 		dolaUserId,
 	}
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_dola_user_addresses", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_dola_user_addresses", []string{}, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	if err != nil {
 		return
 	}
@@ -653,7 +653,7 @@ func (c *Contract) GetUserHealthFactor(ctx context.Context, signer types.Address
 		*c.priceOracle,
 		dolaUserId,
 	}
-	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_user_health_factor", []string{}, args, callOptions.Gas, callOptions.GasBudget)
+	tx, err := c.client.MoveCall(ctx, signer, *c.externalInterfacePackageId, "interfaces", "get_user_health_factor", []string{}, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	if err != nil {
 		return
 	}
@@ -672,8 +672,11 @@ func (c *Contract) GetUserHealthFactor(ctx context.Context, signer types.Address
 }
 
 func parseLastEvent(dryRunResponse *types.DryRunTransactionBlockResponse, f func(event types.SuiEvent) error) (err error) {
-	if dryRunResponse.Effects.Status.Status != "success" {
-		return errors.New(dryRunResponse.Effects.Status.Error)
+	if !dryRunResponse.Effects.Data.IsSuccess() {
+		if nil == dryRunResponse.Effects.Data.V1 {
+			return errors.New("parse event failed, no effects")
+		}
+		return errors.New(dryRunResponse.Effects.Data.V1.Status.Error)
 	}
 
 	if len(dryRunResponse.Events) == 0 {

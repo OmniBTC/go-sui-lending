@@ -173,7 +173,7 @@ func parseMoveEventHeader(event types.SuiEvent) (result MoveEventHeader, err err
 }
 
 func parseEventHeader(event types.SuiEvent) (result EventHeader, err error) {
-	result.Timestamp = uint64(*event.TimestampMs)
+	result.Timestamp = event.TimestampMs.Uint64()
 	result.TxDigest = event.Id.TxDigest
 	result.Id = event.Id
 	return

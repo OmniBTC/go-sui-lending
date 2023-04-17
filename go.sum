@@ -3,6 +3,8 @@ github.com/coming-chat/go-sui v0.0.0-20230404031843-fb42bd5ff027 h1:pagiJW1ok1vi
 github.com/coming-chat/go-sui v0.0.0-20230404031843-fb42bd5ff027/go.mod h1:s5DRgrUeaPfWULPP3+OcUaBdRIVkq7W1PrQKNr7D5ag=
 github.com/coming-chat/go-sui v0.0.0-20230404040557-a73c1a8910da h1:XVtXWvPeNsZ2bEFAPElM4uptagF4lLUeNwI1dgsasWU=
 github.com/coming-chat/go-sui v0.0.0-20230404040557-a73c1a8910da/go.mod h1:s5DRgrUeaPfWULPP3+OcUaBdRIVkq7W1PrQKNr7D5ag=
+github.com/coming-chat/go-sui v0.0.0-20230412035233-605c15c798fc h1:zo5M7l0lESWxdTARc/Sdbypor3uSn0C+PS+WCz6Zr3M=
+github.com/coming-chat/go-sui v0.0.0-20230412035233-605c15c798fc/go.mod h1:s5DRgrUeaPfWULPP3+OcUaBdRIVkq7W1PrQKNr7D5ag=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/fardream/go-bcs v0.2.1 h1:ffW/0Jr0b2WXLNPF8AX6wWI9ETVE4+aXkv2aIXVViwE=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

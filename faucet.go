@@ -33,6 +33,6 @@ func (i *innerFaucetContract) Claim(ctx context.Context, signer types.Address, t
 	args := []any{
 		*i.faucetId,
 	}
-	resp, err := i.client.MoveCall(ctx, signer, *i.packageId, "faucet", "claim", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
+	resp, err := i.client.MoveCall(ctx, signer, *i.packageId, "faucet", "claim", typeArgs, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	return resp, err
 }

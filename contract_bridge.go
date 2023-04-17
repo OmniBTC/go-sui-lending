@@ -31,7 +31,7 @@ func (c *Contract) SendBinding(ctx context.Context, signer types.Address, typeAr
 		bindingArgs.DolaChainId,
 		bindingArgs.BindAddress,
 	}
-	resp, err := c.client.MoveCall(ctx, signer, *c.bridgePoolPackageId, "bridge_pool", "send_binding", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
+	resp, err := c.client.MoveCall(ctx, signer, *c.bridgePoolPackageId, "bridge_pool", "send_binding", typeArgs, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	return resp, err
 }
 
@@ -44,6 +44,6 @@ func (c *Contract) SendingUnbinding(ctx context.Context, signer types.Address, t
 		unbindingArgs.DolaChainId,
 		unbindingArgs.UnbindAddress,
 	}
-	resp, err := c.client.MoveCall(ctx, signer, *c.bridgePoolPackageId, "bridge_pool", "send_unbinding", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
+	resp, err := c.client.MoveCall(ctx, signer, *c.bridgePoolPackageId, "bridge_pool", "send_unbinding", typeArgs, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	return resp, err
 }

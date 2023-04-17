@@ -26,7 +26,7 @@ const (
 
 	devTestUserId      = "8"
 	devTestUserAddress = "0x79e54dcebd85b45b6f447358d529a6c08687e3f98c6e9cd790238299fdedeabc"
-	devTestGasObj      = "0x299ece633f11f5aff97f8527cd0283fd2e724b2a48c7b8876348122d19c343a8"
+	devTestGasObj      = "0x04219e6b31495353970ffbb911de16b45aaa868ac99ce71179bd300881a7eb49"
 )
 
 func getDevContract() *Contract {

@@ -132,7 +132,7 @@ func (c *Contract) Supply(ctx context.Context, signer types.Address, typeArgs []
 		supplyArgs.DepositCoins,
 		supplyArgs.DepositAmount,
 	}
-	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "supply", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
+	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "supply", typeArgs, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	return resp, err
 }
 
@@ -147,7 +147,7 @@ func (c *Contract) WithdrawLocal(ctx context.Context, signer types.Address, type
 		withdrawArgs.Pool,
 		withdrawArgs.Amount,
 	}
-	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "withdraw_local", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
+	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "withdraw_local", typeArgs, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	return resp, err
 }
 
@@ -168,7 +168,7 @@ func (c *Contract) WithdrawRemote(ctx context.Context, signer types.Address, typ
 		withdrawArgs.RelayFeeCoins,
 		withdrawArgs.RelayFeeAmount,
 	}
-	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "withdraw_local", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
+	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "withdraw_local", typeArgs, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	return resp, err
 }
 
@@ -184,7 +184,7 @@ func (c *Contract) BorrowLocal(ctx context.Context, signer types.Address, typeAr
 		borrowArgs.Pool,
 		borrowArgs.Amount,
 	}
-	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "borrow_local", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
+	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "borrow_local", typeArgs, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	return resp, err
 }
 
@@ -199,6 +199,6 @@ func (c *Contract) Repay(ctx context.Context, signer types.Address, typeArgs []s
 		repayArgs.RepayCoins,
 		repayArgs.RepayAmount,
 	}
-	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "repay", typeArgs, args, callOptions.Gas, callOptions.GasBudget)
+	resp, err := c.client.MoveCall(ctx, signer, *c.lendingPortalPackageId, "lending", "repay", typeArgs, args, callOptions.Gas, types.NewSafeSuiBigInt(callOptions.GasBudget))
 	return resp, err
 }
