@@ -3,7 +3,7 @@ package gosuilending
 import (
 	"strconv"
 
-	"github.com/coming-chat/go-sui/types"
+	"github.com/coming-chat/go-sui/v2/types"
 )
 
 const (
@@ -174,7 +174,7 @@ func parseMoveEventHeader(event types.SuiEvent) (result MoveEventHeader, err err
 
 func parseEventHeader(event types.SuiEvent) (result EventHeader, err error) {
 	result.Timestamp = event.TimestampMs.Uint64()
-	result.TxDigest = event.Id.TxDigest
+	result.TxDigest = event.Id.TxDigest.String()
 	result.Id = event.Id
 	return
 }

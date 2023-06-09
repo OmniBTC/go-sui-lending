@@ -3,26 +3,27 @@ package gosuilending
 import (
 	"context"
 
-	"github.com/coming-chat/go-sui/types"
+	"github.com/coming-chat/go-sui/v2/sui_types"
+	"github.com/coming-chat/go-sui/v2/types"
 )
 
 type (
 	BindingArgs struct {
-		WormholeMessageCoins  []types.ObjectId // vector<Coin<SUI>>
+		WormholeMessageCoins  []sui_types.ObjectID // vector<Coin<SUI>>
 		WormholeMessageAmount string
 		DolaChainId           uint16
 		BindAddress           string
 	}
 
 	UnbindingArgs struct {
-		WormholeMessageCoins  []types.ObjectId // vector<Coin<SUI>>
+		WormholeMessageCoins  []sui_types.ObjectID // vector<Coin<SUI>>
 		WormholeMessageAmount string
 		DolaChainId           uint16
 		UnbindAddress         string
 	}
 )
 
-func (c *Contract) SendBinding(ctx context.Context, signer types.Address, typeArgs []string, bindingArgs BindingArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
+func (c *Contract) SendBinding(ctx context.Context, signer sui_types.SuiAddress, typeArgs []string, bindingArgs BindingArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
 	args := []any{
 		*c.poolState,
 		*c.wormholeState,
@@ -35,7 +36,7 @@ func (c *Contract) SendBinding(ctx context.Context, signer types.Address, typeAr
 	return resp, err
 }
 
-func (c *Contract) SendingUnbinding(ctx context.Context, signer types.Address, typeArgs []string, unbindingArgs UnbindingArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
+func (c *Contract) SendingUnbinding(ctx context.Context, signer sui_types.SuiAddress, typeArgs []string, unbindingArgs UnbindingArgs, callOptions CallOptions) (*types.TransactionBytes, error) {
 	args := []any{
 		*c.poolState,
 		*c.wormholeState,

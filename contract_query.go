@@ -8,7 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/coming-chat/go-sui/types"
+	"github.com/coming-chat/go-sui/v2/sui_types"
+	"github.com/coming-chat/go-sui/v2/types"
 )
 
 type (
@@ -218,7 +219,7 @@ func newUserAddress(data interface{}) string {
 	return newDolaAddress(10, data)
 }
 
-func (c *Contract) GetDolaTokenLiquidity(ctx context.Context, signer types.Address, dolaPoolId uint16, callOptions CallOptions) (liquidity *big.Int, err error) {
+func (c *Contract) GetDolaTokenLiquidity(ctx context.Context, signer sui_types.SuiAddress, dolaPoolId uint16, callOptions CallOptions) (liquidity *big.Int, err error) {
 	args := []any{
 		*c.poolManagerInfo,
 		dolaPoolId,
@@ -229,7 +230,7 @@ func (c *Contract) GetDolaTokenLiquidity(ctx context.Context, signer types.Addre
 		return
 	}
 
-	effects, err := c.client.DryRunTransaction(ctx, tx)
+	effects, err := c.client.DryRunTransaction(ctx, tx.TxBytes)
 	if err != nil {
 		return
 	}
@@ -242,7 +243,7 @@ func (c *Contract) GetDolaTokenLiquidity(ctx context.Context, signer types.Addre
 	return
 }
 
-func (c *Contract) GetAppTokenLiquidity(ctx context.Context, signer types.Address, appId uint16, dolaPoolId uint16, callOptions CallOptions) (liquidity *big.Int, err error) {
+func (c *Contract) GetAppTokenLiquidity(ctx context.Context, signer sui_types.SuiAddress, appId uint16, dolaPoolId uint16, callOptions CallOptions) (liquidity *big.Int, err error) {
 	args := []any{
 		*c.poolManagerInfo,
 		appId,
@@ -253,7 +254,7 @@ func (c *Contract) GetAppTokenLiquidity(ctx context.Context, signer types.Addres
 		return
 	}
 
-	effects, err := c.client.DryRunTransaction(ctx, tx)
+	effects, err := c.client.DryRunTransaction(ctx, tx.TxBytes)
 	if err != nil {
 		return
 	}
@@ -271,7 +272,7 @@ func (c *Contract) GetAppTokenLiquidity(ctx context.Context, signer types.Addres
 }
 
 // GetPoolLiquidity return a pool liquidity on a chain
-func (c *Contract) GetPoolLiquidity(ctx context.Context, signer types.Address, dolaChainId uint16, poolAddress string, callOptions CallOptions) (liquidity *big.Int, err error) {
+func (c *Contract) GetPoolLiquidity(ctx context.Context, signer sui_types.SuiAddress, dolaChainId uint16, poolAddress string, callOptions CallOptions) (liquidity *big.Int, err error) {
 	args := []any{
 		*c.poolManagerInfo,
 		dolaChainId,
@@ -282,7 +283,7 @@ func (c *Contract) GetPoolLiquidity(ctx context.Context, signer types.Address, d
 		return
 	}
 
-	effects, err := c.client.DryRunTransaction(ctx, tx)
+	effects, err := c.client.DryRunTransaction(ctx, tx.TxBytes)
 	if err != nil {
 		return
 	}
@@ -300,7 +301,7 @@ func (c *Contract) GetPoolLiquidity(ctx context.Context, signer types.Address, d
 }
 
 // GetAllPoolLiquidity return all chain liquidity of a dola pool
-func (c *Contract) GetAllPoolLiquidity(ctx context.Context, signer types.Address, dolaPoolId uint16, callOptions CallOptions) (poolInfos []PoolInfo, err error) {
+func (c *Contract) GetAllPoolLiquidity(ctx context.Context, signer sui_types.SuiAddress, dolaPoolId uint16, callOptions CallOptions) (poolInfos []PoolInfo, err error) {
 	args := []any{
 		*c.poolManagerInfo,
 		dolaPoolId,
@@ -310,7 +311,7 @@ func (c *Contract) GetAllPoolLiquidity(ctx context.Context, signer types.Address
 		return
 	}
 
-	effects, err := c.client.DryRunTransaction(ctx, tx)
+	effects, err := c.client.DryRunTransaction(ctx, tx.TxBytes)
 	if err != nil {
 		return
 	}
@@ -326,7 +327,7 @@ func (c *Contract) GetAllPoolLiquidity(ctx context.Context, signer types.Address
 	return
 }
 
-func (c *Contract) GetUserTokenDebt(ctx context.Context, signer types.Address, dolaUserId string, dolaPoolId uint16, callOptions CallOptions) (debtAmount *big.Int, debtValue *big.Int, err error) {
+func (c *Contract) GetUserTokenDebt(ctx context.Context, signer sui_types.SuiAddress, dolaUserId string, dolaPoolId uint16, callOptions CallOptions) (debtAmount *big.Int, debtValue *big.Int, err error) {
 	args := []any{
 		*c.storage,
 		*c.priceOracle,
@@ -338,7 +339,7 @@ func (c *Contract) GetUserTokenDebt(ctx context.Context, signer types.Address, d
 		return
 	}
 
-	effects, err := c.client.DryRunTransaction(ctx, tx)
+	effects, err := c.client.DryRunTransaction(ctx, tx.TxBytes)
 	if err != nil {
 		return
 	}
@@ -361,7 +362,7 @@ func (c *Contract) GetUserTokenDebt(ctx context.Context, signer types.Address, d
 	return
 }
 
-func (c *Contract) GetUserCollateral(ctx context.Context, signer types.Address, dolaUserId string, dolaPoolId uint16, callOptions CallOptions) (collateral CollateralItem, err error) {
+func (c *Contract) GetUserCollateral(ctx context.Context, signer sui_types.SuiAddress, dolaUserId string, dolaPoolId uint16, callOptions CallOptions) (collateral CollateralItem, err error) {
 	args := []any{
 		*c.storage,
 		*c.priceOracle,
@@ -373,7 +374,7 @@ func (c *Contract) GetUserCollateral(ctx context.Context, signer types.Address, 
 		return
 	}
 
-	effects, err := c.client.DryRunTransaction(ctx, tx)
+	effects, err := c.client.DryRunTransaction(ctx, tx.TxBytes)
 	if err != nil {
 		return
 	}
@@ -385,7 +386,7 @@ func (c *Contract) GetUserCollateral(ctx context.Context, signer types.Address, 
 	return
 }
 
-func (c *Contract) GetAllReserveInfo(ctx context.Context, signer types.Address, callOptions CallOptions) (reserveInfos []ReserveInfo, err error) {
+func (c *Contract) GetAllReserveInfo(ctx context.Context, signer sui_types.SuiAddress, callOptions CallOptions) (reserveInfos []ReserveInfo, err error) {
 	args := []any{
 		*c.poolManagerInfo,
 		*c.storage,
@@ -395,7 +396,7 @@ func (c *Contract) GetAllReserveInfo(ctx context.Context, signer types.Address, 
 		return
 	}
 
-	effects, err := c.client.DryRunTransaction(ctx, tx)
+	effects, err := c.client.DryRunTransaction(ctx, tx.TxBytes)
 	if err != nil {
 		return
 	}
@@ -415,7 +416,7 @@ func (c *Contract) GetAllReserveInfo(ctx context.Context, signer types.Address, 
 	return
 }
 
-func (c *Contract) GetReserveInfo(ctx context.Context, signer types.Address, dolaPoolId uint16, callOptions CallOptions) (reserveInfo *ReserveInfo, err error) {
+func (c *Contract) GetReserveInfo(ctx context.Context, signer sui_types.SuiAddress, dolaPoolId uint16, callOptions CallOptions) (reserveInfo *ReserveInfo, err error) {
 	args := []any{
 		*c.poolManagerInfo,
 		*c.storage,
@@ -426,7 +427,7 @@ func (c *Contract) GetReserveInfo(ctx context.Context, signer types.Address, dol
 		return
 	}
 
-	effects, err := c.client.DryRunTransaction(ctx, tx)
+	effects, err := c.client.DryRunTransaction(ctx, tx.TxBytes)
 	if err != nil {
 		return
 	}
@@ -442,7 +443,7 @@ func (c *Contract) GetReserveInfo(ctx context.Context, signer types.Address, dol
 	return
 }
 
-func (c *Contract) GetUserAllowedBorrow(ctx context.Context, signer types.Address, dolaUserId string, borrowPoolId uint16, callOptions CallOptions) (amount *big.Int, err error) {
+func (c *Contract) GetUserAllowedBorrow(ctx context.Context, signer sui_types.SuiAddress, dolaUserId string, borrowPoolId uint16, callOptions CallOptions) (amount *big.Int, err error) {
 	args := []any{
 		*c.poolManagerInfo,
 		*c.storage,
@@ -455,7 +456,7 @@ func (c *Contract) GetUserAllowedBorrow(ctx context.Context, signer types.Addres
 		return
 	}
 
-	effects, err := c.client.DryRunTransaction(ctx, tx)
+	effects, err := c.client.DryRunTransaction(ctx, tx.TxBytes)
 	if err != nil {
 		return
 	}
@@ -473,7 +474,7 @@ func (c *Contract) GetUserAllowedBorrow(ctx context.Context, signer types.Addres
 	return
 }
 
-func (c *Contract) GetUserLendingInfo(ctx context.Context, signer types.Address, dolaUserId string, callOptions CallOptions) (userLendingInfo *UserLendingInfo, err error) {
+func (c *Contract) GetUserLendingInfo(ctx context.Context, signer sui_types.SuiAddress, dolaUserId string, callOptions CallOptions) (userLendingInfo *UserLendingInfo, err error) {
 	args := []any{
 		*c.storage,
 		*c.priceOracle,
@@ -484,7 +485,7 @@ func (c *Contract) GetUserLendingInfo(ctx context.Context, signer types.Address,
 		return
 	}
 
-	effects, err := c.client.DryRunTransaction(ctx, tx)
+	effects, err := c.client.DryRunTransaction(ctx, tx.TxBytes)
 	if err != nil {
 		return
 	}
@@ -543,7 +544,7 @@ func (c *Contract) GetUserLendingInfo(ctx context.Context, signer types.Address,
 	return
 }
 
-func (c *Contract) GetOraclePrice(ctx context.Context, signer types.Address, dolaPoolId uint16, callOptions CallOptions) (dolaTokenPrice DolaTokenPrice, err error) {
+func (c *Contract) GetOraclePrice(ctx context.Context, signer sui_types.SuiAddress, dolaPoolId uint16, callOptions CallOptions) (dolaTokenPrice DolaTokenPrice, err error) {
 	args := []any{
 		*c.priceOracle,
 		dolaPoolId,
@@ -554,7 +555,7 @@ func (c *Contract) GetOraclePrice(ctx context.Context, signer types.Address, dol
 		return
 	}
 
-	effects, err := c.client.DryRunTransaction(ctx, tx)
+	effects, err := c.client.DryRunTransaction(ctx, tx.TxBytes)
 	if err != nil {
 		return
 	}
@@ -566,7 +567,7 @@ func (c *Contract) GetOraclePrice(ctx context.Context, signer types.Address, dol
 	return
 }
 
-func (c *Contract) GetAllOraclePrice(ctx context.Context, signer types.Address, callOptions CallOptions) (prices []DolaTokenPrice, err error) {
+func (c *Contract) GetAllOraclePrice(ctx context.Context, signer sui_types.SuiAddress, callOptions CallOptions) (prices []DolaTokenPrice, err error) {
 	args := []any{
 		*c.storage,
 		*c.priceOracle,
@@ -577,7 +578,7 @@ func (c *Contract) GetAllOraclePrice(ctx context.Context, signer types.Address, 
 		return
 	}
 
-	effects, err := c.client.DryRunTransaction(ctx, tx)
+	effects, err := c.client.DryRunTransaction(ctx, tx.TxBytes)
 	if err != nil {
 		return
 	}
@@ -596,7 +597,7 @@ func (c *Contract) GetAllOraclePrice(ctx context.Context, signer types.Address, 
 
 // GetDolaUserId return dola_user_id for (dola_chain_id, address) pair
 // if not exist, an error return
-func (c *Contract) GetDolaUserId(ctx context.Context, signer types.Address, dolaChainId uint16, user string, callOptions CallOptions) (userId string, err error) {
+func (c *Contract) GetDolaUserId(ctx context.Context, signer sui_types.SuiAddress, dolaChainId uint16, user string, callOptions CallOptions) (userId string, err error) {
 	args := []any{
 		*c.userManagerInfo,
 		dolaChainId,
@@ -607,7 +608,7 @@ func (c *Contract) GetDolaUserId(ctx context.Context, signer types.Address, dola
 		return
 	}
 
-	effects, err := c.client.DryRunTransaction(ctx, tx)
+	effects, err := c.client.DryRunTransaction(ctx, tx.TxBytes)
 	if err != nil {
 		return
 	}
@@ -620,7 +621,7 @@ func (c *Contract) GetDolaUserId(ctx context.Context, signer types.Address, dola
 	return
 }
 
-func (c *Contract) GetDolaUserAddresses(ctx context.Context, signer types.Address, dolaUserId string, callOptions CallOptions) (dolaUserAddresses []DolaUserAddress, err error) {
+func (c *Contract) GetDolaUserAddresses(ctx context.Context, signer sui_types.SuiAddress, dolaUserId string, callOptions CallOptions) (dolaUserAddresses []DolaUserAddress, err error) {
 	args := []any{
 		*c.userManagerInfo,
 		dolaUserId,
@@ -630,7 +631,7 @@ func (c *Contract) GetDolaUserAddresses(ctx context.Context, signer types.Addres
 		return
 	}
 
-	effects, err := c.client.DryRunTransaction(ctx, tx)
+	effects, err := c.client.DryRunTransaction(ctx, tx.TxBytes)
 	if err != nil {
 		return
 	}
@@ -647,7 +648,7 @@ func (c *Contract) GetDolaUserAddresses(ctx context.Context, signer types.Addres
 	return
 }
 
-func (c *Contract) GetUserHealthFactor(ctx context.Context, signer types.Address, dolaUserId string, callOptions CallOptions) (healthFactor *big.Int, err error) {
+func (c *Contract) GetUserHealthFactor(ctx context.Context, signer sui_types.SuiAddress, dolaUserId string, callOptions CallOptions) (healthFactor *big.Int, err error) {
 	args := []any{
 		*c.storage,
 		*c.priceOracle,
@@ -658,7 +659,7 @@ func (c *Contract) GetUserHealthFactor(ctx context.Context, signer types.Address
 		return
 	}
 
-	effects, err := c.client.DryRunTransaction(ctx, tx)
+	effects, err := c.client.DryRunTransaction(ctx, tx.TxBytes)
 	if err != nil {
 		return
 	}

@@ -5,28 +5,28 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/coming-chat/go-sui/client"
-	"github.com/coming-chat/go-sui/types"
+	"github.com/coming-chat/go-sui/v2/client"
+	"github.com/coming-chat/go-sui/v2/sui_types"
 )
 
 const (
-	devnetRpcUrl              = "https://fullnode.testnet.sui.io"
-	devLendingPortalPackageId = "0x5b81c31943358fcf8f20d2c9b92adf6b47062aa4b01afb2e5c901920807c3e09"
-	devExternalInterfaces     = "0x25bf584ec396b75ee3ab0367a5b6ebdb82f8fd8bf42f5bd00c281464d604a994"
-	devWormholeBridge         = "0xe198cbf3b61678ba33be2a53965c4d68a2b55d00aea67af9038f54c4dba1ec61" //
+	devnetRpcUrl              = "https://fullnode.mainnet.sui.io"
+	devLendingPortalPackageId = "0xc5b2a5049cd71586362d0c6a38e34cfaae7ea9ce6d5401a350506a15f817bf72"
+	devExternalInterfaces     = "0x93b49ef245f169342cb07e70b6a4835d4071594451a9df738acbb5ecdcac2e88"
+	devWormholeBridge         = "0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a" //
 
-	devUSDTAddress     = "54fc06a12aeed0752c6db5d949fcf4554bd320ca69676ee9d3085ba946b91af0::coins::USDT"
+	devUSDTAddress     = "c060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN"
 	devUSDTPoolId      = 1
-	devPoolManager     = "0x7b84fae163835c88ea5a8b05a257ccd211bb3c330c63d1f2f19c725d8cf15d11"
-	devPoolState       = "0x846bca7df86db919d0bc44d3b328664c4b7bd85b82ea5a20208ccb31d2535d27"
-	devPriceOracle     = "0xf16e8e7741c31361ae59547f2ec21c5402d719bccf53e04d53b2e9c369116ae6"
-	devStorage         = "0x219a09c981bf165d9bbc40341593777d9391af4c8b8463d1dbbb974b8c34900b"
-	devUserManagerInfo = "0x270434bfc0de627d8236e02f10e45beeb341462f6a6457b7659089be781f8468"
-	devWormholeState   = "0xb35a426ed4b8b310645ebd978f29944de17bff73397271b5d59695b753d39ace"
+	devPoolManager     = "0x1be839a23e544e8d4ba7fab09eab50626c5cfed80f6a22faf7ff71b814689cfb"
+	devPoolState       = "0x5c9d9db2dd5f34154ee59686334f3504026809fa67afe5332837191ee6220586"
+	devPriceOracle     = "0x42afbffd3479b06f40c5576799b02ea300df36cf967adcd1ae15445270f572e2"
+	devStorage         = "0xe5a189b1858b207f2cf8c05a09d75bae4271c7a9a8f84a8c199c6896dc7c37e6"
+	devUserManagerInfo = "0xee633dc3fd1218d3bd9703fb9b98e6c8d7fdd8c8bf1ca2645ee40d65fb533a3e"
+	devWormholeState   = "0xaeab97f96cf9877fee2883315d459552b2b921edc16d7ceac6eab944dd88919c"
 
-	devTestUserId      = "8"
+	devTestUserId      = "72"
 	devTestUserAddress = "0x79e54dcebd85b45b6f447358d529a6c08687e3f98c6e9cd790238299fdedeabc"
-	devTestGasObj      = "0x04219e6b31495353970ffbb911de16b45aaa868ac99ce71179bd300881a7eb49"
+	devTestGasObj      = "0x09db26ce25076c41d7cd9008ae6aa521e73940686d91a49800198ec3710cc8a3"
 )
 
 func getDevContract() *Contract {
@@ -65,13 +65,13 @@ func getUserDolaId() string {
 	return devTestUserId
 }
 
-func toHex(str string) *types.HexData {
-	hexData, err := types.NewHexData(str)
+func toHex(str string) *sui_types.ObjectID {
+	hexData, err := sui_types.NewObjectIdFromHex(str)
 	AssertNil(err)
 	return hexData
 }
 
-func getTestAddressAndCallOptions() (*types.Address, CallOptions) {
+func getTestAddressAndCallOptions() (*sui_types.SuiAddress, CallOptions) {
 	address := toHex(devTestUserAddress)
 	gasObj := toHex(devTestGasObj)
 	return address, CallOptions{Gas: gasObj, GasBudget: 30_000_000}
@@ -85,7 +85,7 @@ func TestContract_GetDolaTokenLiquidity(t *testing.T) {
 	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
-		signer      types.Address
+		signer      sui_types.SuiAddress
 		dolaPoolId  uint16
 		callOptions CallOptions
 	}
@@ -121,7 +121,7 @@ func TestContract_GetAppTokenLiquidity(t *testing.T) {
 	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
-		signer      types.Address
+		signer      sui_types.SuiAddress
 		appId       uint16
 		dolaPoolId  uint16
 		callOptions CallOptions
@@ -159,7 +159,7 @@ func TestContract_GetDolaUserId(t *testing.T) {
 	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
-		signer      types.Address
+		signer      sui_types.SuiAddress
 		dolaChainId uint16
 		user        string
 		callOptions CallOptions
@@ -197,7 +197,7 @@ func TestContract_GetPoolLiquidity(t *testing.T) {
 	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
-		signer      types.Address
+		signer      sui_types.SuiAddress
 		dolaChainId uint16
 		poolAddress string
 		callOptions CallOptions
@@ -235,7 +235,7 @@ func TestContract_GetAllPoolLiquidity(t *testing.T) {
 	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
-		signer      types.Address
+		signer      sui_types.SuiAddress
 		dolaPoolId  uint16
 		callOptions CallOptions
 	}
@@ -271,7 +271,7 @@ func TestContract_GetDolaUserAddresses(t *testing.T) {
 	signer, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
-		signer      types.Address
+		signer      sui_types.SuiAddress
 		dolaUserId  string
 		callOptions CallOptions
 	}
@@ -308,7 +308,7 @@ func TestContract_GetUserHealthFactor(t *testing.T) {
 	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
-		signer      types.Address
+		signer      sui_types.SuiAddress
 		dolaUserId  string
 		callOptions CallOptions
 	}
@@ -344,7 +344,7 @@ func TestContract_GetAllOraclePrice(t *testing.T) {
 	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
-		signer      types.Address
+		signer      sui_types.SuiAddress
 		callOptions CallOptions
 	}
 	tests := []struct {
@@ -376,7 +376,7 @@ func TestContract_GetOraclePrice(t *testing.T) {
 	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
-		signer      types.Address
+		signer      sui_types.SuiAddress
 		dolaPoolId  uint16
 		callOptions CallOptions
 	}
@@ -410,7 +410,7 @@ func TestContract_GetAllReserveInfo(t *testing.T) {
 	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
-		signer      types.Address
+		signer      sui_types.SuiAddress
 		callOptions CallOptions
 	}
 	tests := []struct {
@@ -442,7 +442,7 @@ func TestContract_GetReserveInfo(t *testing.T) {
 	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
-		signer      types.Address
+		signer      sui_types.SuiAddress
 		dolaPoolId  uint16
 		callOptions CallOptions
 	}
@@ -478,7 +478,7 @@ func TestContract_GetUserCollateral(t *testing.T) {
 	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
-		signer      types.Address
+		signer      sui_types.SuiAddress
 		dolaUserId  string
 		dolaPoolId  uint16
 		callOptions CallOptions
@@ -516,7 +516,7 @@ func TestContract_GetUserLendingInfo(t *testing.T) {
 	address, callOptions := getTestAddressAndCallOptions()
 	type args struct {
 		ctx         context.Context
-		signer      types.Address
+		signer      sui_types.SuiAddress
 		dolaUserId  string
 		callOptions CallOptions
 	}
