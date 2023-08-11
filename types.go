@@ -1,6 +1,8 @@
 package gosuilending
 
 import (
+	"errors"
+	"math/big"
 	"strconv"
 
 	"github.com/coming-chat/go-sui/v2/types"
@@ -68,7 +70,46 @@ type (
 		LiquidateUserId uint64
 		CallType        int
 	}
+
+	// core event
+	LendingCoreExecuteEvent struct {
+		MoveEventHeader MoveEventHeader
+		UserId          uint64
+		Amount          *big.Int
+		PoolId          uint16
+		ViolatorId      uint64
+		CallType        int
+	}
 )
+
+func ParseLendingCoreExecuteEvent(event types.SuiEvent) (result *LendingCoreExecuteEvent, err error) {
+	defer func() {
+		if tmpErr := recover(); tmpErr != nil {
+			err = tmpErr.(error)
+		}
+	}()
+	result = &LendingCoreExecuteEvent{}
+	fields := event.ParsedJson.(map[string]interface{})
+	if result.MoveEventHeader, err = parseMoveEventHeader(event); err != nil {
+		return
+	}
+	if result.UserId, err = strconv.ParseUint(fields["user_id"].(string), 10, 64); err != nil {
+		return
+	}
+	if result.ViolatorId, err = strconv.ParseUint(fields["violator_id"].(string), 10, 64); err != nil {
+		return
+	}
+	result.PoolId = uint16(fields["pool_id"].(float64))
+	result.CallType = int(fields["call_type"].(float64))
+
+	// contract use u256 for compute, all amount is in u64
+	var b bool
+	result.Amount, b = big.NewInt(0).SetString(fields["amount"].(string), 0)
+	if !b {
+		err = errors.New("parse amount failed")
+	}
+	return
+}
 
 func ParseLendingCoreEvent(event types.SuiEvent) (result *LendingCoreEvent, err error) {
 	defer func() {
